@@ -104,9 +104,19 @@ TEST( SparseVector, iterator )
 
 	int sum = 0;
 	for( const auto& value : vec )
-	{
 		sum += value;
-	}
+
+	EXPECT_EQ( sum, 6 );
+}
+
+TEST( SparseVector, const_iterator )
+{
+	const SparseVector< int > vec{ 0, 1, 2, 3 };
+
+	int sum = 0;
+	for( const auto& value : vec )
+		sum += value;
+
 	EXPECT_EQ( sum, 6 );
 }
 

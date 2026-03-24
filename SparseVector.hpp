@@ -134,6 +134,9 @@ public:
 	auto begin() { return m_dense.begin(); }
 	auto end() { return m_dense.end(); }
 
+	auto begin() const { return m_dense.begin(); }
+	auto end() const { return m_dense.end(); }
+
 private:
 	std::vector< T > m_dense;
 	std::vector< index_type > m_sparse;        // indirection from sparse index to dense index
