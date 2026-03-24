@@ -54,6 +54,13 @@ public:
 		return /* index >= 0 and */ index < m_sparse.size() and m_sparse[ index ] != s_tombstone;
 	}
 
+	void clear()
+	{
+		m_dense.clear();
+		m_sparse.clear();
+		m_sparseInverse.clear();
+	}
+
 	template< typename... Args >
 	auto emplace( Args&&... args ) -> reference
 	{

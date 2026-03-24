@@ -14,10 +14,19 @@ TEST( SparseVector, ctor )
 
 TEST( SparseVector, intializer_list )
 {
-	SparseVector< short > vec{ { 1, 2, 3, 4, 5, 6 } };
+	SparseVector< short > vec{ 1, 2, 3, 4, 5, 6 };
 
 	EXPECT_FALSE( vec.empty() );
 	EXPECT_EQ( vec.at( 4 ), 5 );
+}
+
+TEST( SparseVector, clear )
+{
+	SparseVector< int > vec{ 1 };
+
+	EXPECT_FALSE( vec.empty() );
+	vec.clear();
+	EXPECT_TRUE( vec.empty() );
 }
 
 TEST( SparseVector, emplace )
@@ -36,10 +45,7 @@ TEST( SparseVector, emplace )
 
 TEST( SparseVector, erase )
 {
-	SparseVector< float > vec;
-	vec.emplace( 0.f );
-	vec.emplace( 1.f );
-	vec.emplace( 2.f );
+	SparseVector< float > vec{ 0.f, 1.f, 2.f };
 
 	EXPECT_TRUE( vec.erase( 1 ) );
 	EXPECT_EQ( vec.size(), 2 );
@@ -52,10 +58,7 @@ TEST( SparseVector, erase )
 
 TEST( SparseVector, reuse )
 {
-	SparseVector< float > vec;
-	vec.emplace( 0.f );
-	vec.emplace( 1.f );
-	vec.emplace( 2.f );
+	SparseVector< float > vec{ 0.f, 1.f, 2.f };
 
 	EXPECT_EQ( vec.at( 1 ), 1.f );
 	EXPECT_TRUE( vec.erase( 1 ) );
@@ -67,11 +70,7 @@ TEST( SparseVector, reuse )
 
 TEST( SparseVector, iterator )
 {
-	SparseVector< int > vec;
-	vec.emplace( 0 );
-	vec.emplace( 1 );
-	vec.emplace( 2 );
-	vec.emplace( 3 );
+	SparseVector< int > vec{ 0, 1, 2, 3 };
 
 	int sum = 0;
 	for( const auto& value : vec )
