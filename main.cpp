@@ -53,6 +53,16 @@ TEST( SparseVector, insert )
 	EXPECT_EQ( vec.at( 13 ), 13.f );
 }
 
+TEST( SparseVector, insert_or_assign )
+{
+	SparseVector< float > vec;
+
+	EXPECT_TRUE( vec.insert_or_assign( 13, 13.f ) );
+	EXPECT_FALSE( vec.insert_or_assign( 13, -1.f ) );
+	EXPECT_EQ( vec.size(), 1 );
+	EXPECT_EQ( vec.at( 13 ), -1.f );
+}
+
 TEST( SparseVector, erase )
 {
 	SparseVector< float > vec{ 0.f, 1.f, 2.f };

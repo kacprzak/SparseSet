@@ -35,6 +35,16 @@ private:
 		std::swap( m_sparse[ first ], m_sparse[ second ] );
 	}
 
+	void do_insert( const index_type& index, const value_type& value )
+	{
+		if( index >= m_sparse.size() )
+			m_sparse.resize( index + 1, s_tombstone );
+
+		m_sparse[ index ] = m_dense.size();
+		m_sparseInverse.emplace_back( index );
+		m_dense.emplace_back( value );
+	}
+
 public:
 	SparseVector() = default;
 	SparseVector( std::initializer_list< T > init ) : m_dense{ init }
@@ -76,18 +86,30 @@ public:
 		return m_dense.emplace_back( std::forward< Args >( args )... );
 	}
 
+	/**
+	 * Returns true if insertion took place and false if there is already value under index.
+	 */
 	bool insert( const index_type& index, const value_type& value )
 	{
 		if( contains( index ) )
 			return false;
 
-		if( index >= m_sparse.size() )
-			m_sparse.resize( index + 1, s_tombstone );
+		do_insert( index, value );
+		return true;
+	}
 
-		m_sparse[ index ] = m_dense.size();
-		m_sparseInverse.emplace_back( index );
-		m_dense.emplace_back( value );
+	/**
+	 * Returns true if insertion took place and false if the assignment took place.
+	 */
+	bool insert_or_assign( const index_type& index, const value_type& value )
+	{
+		if( contains( index ) )
+		{
+			m_dense[ m_sparse[ index ] ] = value;
+			return false;
+		}
 
+		do_insert( index, value );
 		return true;
 	}
 
