@@ -64,14 +64,31 @@ public:
 	template< typename... Args >
 	auto emplace( Args&&... args ) -> reference
 	{
-		reference result = m_dense.emplace_back( std::forward< Args >( args )... );
-
 		auto it = std::find( m_sparse.begin(), m_sparse.end(), s_tombstone );
 
-		it = m_sparse.insert( it, m_sparseInverse.size() );
+		if( it != m_sparse.end() )
+			*it = m_sparseInverse.size();
+		else
+			it = m_sparse.insert( it, m_sparseInverse.size() );
+
 		m_sparseInverse.emplace_back( std::distance( m_sparse.begin(), it ) );
 
-		return result;
+		return m_dense.emplace_back( std::forward< Args >( args )... );
+	}
+
+	bool insert( const index_type& index, const value_type& value )
+	{
+		if( contains( index ) )
+			return false;
+
+		if( index >= m_sparse.size() )
+			m_sparse.resize( index + 1, s_tombstone );
+
+		m_sparse[ index ] = m_dense.size();
+		m_sparseInverse.emplace_back( index );
+		m_dense.emplace_back( value );
+
+		return true;
 	}
 
 	auto erase( const index_type& index ) -> bool
