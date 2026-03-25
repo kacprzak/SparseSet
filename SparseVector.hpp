@@ -19,7 +19,7 @@ concept key_value_pair
  */
 template< typename Key, typename T = Key >
     requires std::unsigned_integral< Key > && ( std::same_as< Key, T > || key_value_pair< Key, T > )
-class SparseVector final
+class SparseSet final
 {
 public:
 	using key_type        = Key;
@@ -31,6 +31,7 @@ public:
 private:
 	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
 
+	[[nodiscard]]
 	auto to_key( const T& value ) -> key_type
 	{
 		if constexpr( key_value_pair< Key, T > )
@@ -60,23 +61,36 @@ private:
 	}
 
 public:
-	SparseVector() = default;
+	SparseSet() = default;
 
-	SparseVector( std::initializer_list< T > init )
+	SparseSet( std::initializer_list< T > init )
 	{
 		m_dense.reserve( init.size() );
 		m_sparse.reserve( init.size() );
 
-		for( auto item : init )
+		for( const auto& item : init )
 			insert( item );
 	}
 
-	bool empty() const { return m_dense.empty(); }
-	size_type size() const { return m_dense.size(); }
+	[[nodiscard]]
+	constexpr bool empty() const noexcept
+	{
+		return m_dense.empty();
+	}
 
-	bool contains( const key_type& key ) const { return key < m_sparse.size() and m_sparse[ key ] != s_tombstone; }
+	[[nodiscard]]
+	constexpr size_type size() const noexcept
+	{
+		return m_dense.size();
+	}
 
-	void clear()
+	[[nodiscard]]
+	constexpr bool contains( const key_type& key ) const noexcept
+	{
+		return key < m_sparse.size() and m_sparse[ key ] != s_tombstone;
+	}
+
+	constexpr void clear() noexcept
 	{
 		m_dense.clear();
 		m_sparse.clear();
@@ -128,14 +142,41 @@ public:
 		return true;
 	}
 
-	auto at( const key_type& key ) -> reference { return m_dense.at( m_sparse.at( key ) ); }
-	auto at( const key_type& key ) const -> const_reference { return m_dense.at( m_sparse.at( key ) ); }
+	[[nodiscard]]
+	auto at( const key_type& key ) -> reference
+	{
+		return m_dense.at( m_sparse.at( key ) );
+	}
 
-	auto begin() { return m_dense.begin(); }
-	auto end() { return m_dense.end(); }
+	[[nodiscard]]
+	auto at( const key_type& key ) const -> const_reference
+	{
+		return m_dense.at( m_sparse.at( key ) );
+	}
 
-	auto begin() const { return m_dense.begin(); }
-	auto end() const { return m_dense.end(); }
+	[[nodiscard]]
+	auto begin()
+	{
+		return m_dense.begin();
+	}
+
+	[[nodiscard]]
+	auto end()
+	{
+		return m_dense.end();
+	}
+
+	[[nodiscard]]
+	auto begin() const
+	{
+		return m_dense.begin();
+	}
+
+	[[nodiscard]]
+	auto end() const
+	{
+		return m_dense.end();
+	}
 
 private:
 	std::vector< key_type > m_sparse; // indirection from sparse index to dense index
