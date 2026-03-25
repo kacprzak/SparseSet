@@ -105,6 +105,7 @@ public:
 	/**
 	 * Returns smallest key without value.
 	 */
+	[[nodiscard]]
 	constexpr key_type find_slot() const
 	{
 		const auto it = std::find( m_sparse.begin(), m_sparse.end(), s_tombstone );
