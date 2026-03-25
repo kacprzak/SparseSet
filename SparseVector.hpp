@@ -30,8 +30,8 @@ private:
 		if( first == second )
 			return;
 
+		std::swap( m_data[ m_sparse[ first ] ], m_data[ m_sparse[ second ] ] );
 		std::swap( m_dense[ m_sparse[ first ] ], m_dense[ m_sparse[ second ] ] );
-		std::swap( m_sparseInverse[ m_sparse[ first ] ], m_sparseInverse[ m_sparse[ second ] ] );
 		std::swap( m_sparse[ first ], m_sparse[ second ] );
 	}
 
@@ -40,24 +40,24 @@ private:
 		if( index >= m_sparse.size() )
 			m_sparse.resize( index + 1, s_tombstone );
 
-		m_sparse[ index ] = m_dense.size();
-		m_sparseInverse.emplace_back( index );
-		m_dense.emplace_back( value );
+		m_sparse[ index ] = m_data.size();
+		m_dense.emplace_back( index );
+		m_data.emplace_back( value );
 	}
 
 public:
 	SparseVector() = default;
-	SparseVector( std::initializer_list< T > init ) : m_dense{ init }
+	SparseVector( std::initializer_list< T > init ) : m_data{ init }
 	{
 		m_sparse.resize( init.size() );
 		std::iota( m_sparse.begin(), m_sparse.end(), 0 );
 
-		m_sparseInverse.resize( init.size() );
-		std::iota( m_sparseInverse.begin(), m_sparseInverse.end(), 0 );
+		m_dense.resize( init.size() );
+		std::iota( m_dense.begin(), m_dense.end(), 0 );
 	}
 
-	bool empty() const { return m_dense.empty(); }
-	size_type size() const { return m_dense.size(); }
+	bool empty() const { return m_data.empty(); }
+	size_type size() const { return m_data.size(); }
 
 	bool contains( const index_type& index ) const
 	{
@@ -66,9 +66,9 @@ public:
 
 	void clear()
 	{
+		m_data.clear();
 		m_dense.clear();
 		m_sparse.clear();
-		m_sparseInverse.clear();
 	}
 
 	template< typename... Args >
@@ -77,13 +77,13 @@ public:
 		auto it = std::find( m_sparse.begin(), m_sparse.end(), s_tombstone );
 
 		if( it != m_sparse.end() )
-			*it = m_sparseInverse.size();
+			*it = m_dense.size();
 		else
-			it = m_sparse.insert( it, m_sparseInverse.size() );
+			it = m_sparse.insert( it, m_dense.size() );
 
-		m_sparseInverse.emplace_back( std::distance( m_sparse.begin(), it ) );
+		m_dense.emplace_back( std::distance( m_sparse.begin(), it ) );
 
-		return m_dense.emplace_back( std::forward< Args >( args )... );
+		return m_data.emplace_back( std::forward< Args >( args )... );
 	}
 
 	/**
@@ -105,7 +105,7 @@ public:
 	{
 		if( contains( index ) )
 		{
-			m_dense[ m_sparse[ index ] ] = value;
+			m_data[ m_sparse[ index ] ] = value;
 			return false;
 		}
 
@@ -119,26 +119,26 @@ public:
 			return false;
 
 		// Swap and pop
-		swap( index, m_sparseInverse.back() );
+		swap( index, m_dense.back() );
 
+		m_data.pop_back();
 		m_dense.pop_back();
-		m_sparseInverse.pop_back();
 		m_sparse[ index ] = s_tombstone;
 
 		return true;
 	}
 
-	auto at( const index_type& index ) -> reference { return m_dense.at( m_sparse.at( index ) ); }
-	auto at( const index_type& index ) const -> const_reference { return m_dense.at( m_sparse.at( index ) ); }
+	auto at( const index_type& index ) -> reference { return m_data.at( m_sparse.at( index ) ); }
+	auto at( const index_type& index ) const -> const_reference { return m_data.at( m_sparse.at( index ) ); }
 
-	auto begin() { return m_dense.begin(); }
-	auto end() { return m_dense.end(); }
+	auto begin() { return m_data.begin(); }
+	auto end() { return m_data.end(); }
 
-	auto begin() const { return m_dense.begin(); }
-	auto end() const { return m_dense.end(); }
+	auto begin() const { return m_data.begin(); }
+	auto end() const { return m_data.end(); }
 
 private:
-	std::vector< T > m_dense;
-	std::vector< index_type > m_sparse;        // indirection from sparse index to dense index
-	std::vector< index_type > m_sparseInverse; // indirection from dense index to sparse index
+	std::vector< T > m_data;
+	std::vector< index_type > m_sparse; // indirection from sparse index to dense index
+	std::vector< index_type > m_dense;  // indirection from dense index to sparse index
 };
