@@ -31,6 +31,7 @@ public:
 	using const_reference = const value_type&;
 
 private:
+	// Marks unused keys.
 	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
 
 	[[nodiscard]]
@@ -150,7 +151,6 @@ public:
 		// Swap and pop
 		swap( key, to_key( m_dense.back() ) );
 
-		// m_data.pop_back();
 		m_dense.pop_back();
 		m_sparse[ key ] = s_tombstone;
 
@@ -194,6 +194,6 @@ public:
 	}
 
 private:
-	std::vector< key_type > m_sparse; // indirection from sparse index to dense index
-	std::vector< T > m_dense;         // indirection from dense index to sparse index
+	std::vector< key_type > m_sparse;  // indirection from sparse index to dense index
+	std::vector< value_type > m_dense; // value and indirection from dense index to sparse index
 };
