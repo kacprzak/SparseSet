@@ -2,17 +2,24 @@
 
 #include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <initializer_list>
 #include <limits>
-#include <numeric>
+#include <type_traits>
 #include <utility>
 #include <vector>
+
+template< typename T >
+concept index_value_pair = requires( T tuple ) {
+	requires std::unsigned_integral< std::remove_cvref_t< decltype( std::get< 0 >( tuple ) ) > >;
+};
 
 /**
  * Container with elements stored contiguously in memory, but indicies remain the same after insertion and erasing.
  */
 template< typename T >
+    requires std::unsigned_integral< T > || index_value_pair< T >
 class SparseVector final
 {
 public:
@@ -25,91 +32,92 @@ public:
 private:
 	static constexpr auto s_tombstone = std::numeric_limits< index_type >::max();
 
+	auto to_index( const T& value ) -> index_type
+	{
+		if constexpr( std::is_unsigned_v< T > )
+		{
+			return value;
+		}
+		else
+		{
+			return std::get< 0 >( value );
+		}
+	}
+
 	void swap( const index_type first, const index_type second )
 	{
 		if( first == second )
 			return;
 
-		std::swap( m_data[ m_sparse[ first ] ], m_data[ m_sparse[ second ] ] );
 		std::swap( m_dense[ m_sparse[ first ] ], m_dense[ m_sparse[ second ] ] );
 		std::swap( m_sparse[ first ], m_sparse[ second ] );
 	}
 
-	void do_insert( const index_type& index, const value_type& value )
+	void do_insert( const value_type& value )
 	{
-		if( index >= m_sparse.size() )
-			m_sparse.resize( index + 1, s_tombstone );
+		const auto index = to_index( value );
 
-		m_sparse[ index ] = m_data.size();
-		m_dense.emplace_back( index );
-		m_data.emplace_back( value );
+		if( index >= m_sparse.size() )
+			m_sparse.resize( index + 1u, s_tombstone );
+
+		m_sparse[ index ] = m_dense.size();
+		m_dense.emplace_back( value );
 	}
 
 public:
 	SparseVector() = default;
-	SparseVector( std::initializer_list< T > init ) : m_data{ init }
-	{
-		m_sparse.resize( init.size() );
-		std::iota( m_sparse.begin(), m_sparse.end(), 0 );
 
-		m_dense.resize( init.size() );
-		std::iota( m_dense.begin(), m_dense.end(), 0 );
+	SparseVector( std::initializer_list< T > init )
+	{
+		m_dense.reserve( init.size() );
+		m_sparse.reserve( init.size() );
+
+		for( auto item : init )
+			insert( item );
 	}
 
-	bool empty() const { return m_data.empty(); }
-	size_type size() const { return m_data.size(); }
+	bool empty() const { return m_dense.empty(); }
+	size_type size() const { return m_dense.size(); }
 
 	bool contains( const index_type& index ) const
 	{
-		return /* index >= 0 and */ index < m_sparse.size() and m_sparse[ index ] != s_tombstone;
+		return index < m_sparse.size() and m_sparse[ index ] != s_tombstone;
 	}
 
 	void clear()
 	{
-		m_data.clear();
 		m_dense.clear();
 		m_sparse.clear();
-	}
-
-	template< typename... Args >
-	auto emplace( Args&&... args ) -> reference
-	{
-		auto it = std::find( m_sparse.begin(), m_sparse.end(), s_tombstone );
-
-		if( it != m_sparse.end() )
-			*it = m_dense.size();
-		else
-			it = m_sparse.insert( it, m_dense.size() );
-
-		m_dense.emplace_back( std::distance( m_sparse.begin(), it ) );
-
-		return m_data.emplace_back( std::forward< Args >( args )... );
 	}
 
 	/**
 	 * Returns true if insertion took place and false if there is already value under index.
 	 */
-	bool insert( const index_type& index, const value_type& value )
+	bool insert( const value_type& value )
 	{
+		const auto index = to_index( value );
+
 		if( contains( index ) )
 			return false;
 
-		do_insert( index, value );
+		do_insert( value );
 		return true;
 	}
 
 	/**
 	 * Returns true if insertion took place and false if the assignment took place.
 	 */
-	bool insert_or_assign( const index_type& index, const value_type& value )
+	bool insert_or_assign( const value_type& value )
 	{
+		const auto index = to_index( value );
+
 		if( contains( index ) )
 		{
-			m_data[ m_sparse[ index ] ] = value;
+			m_dense[ m_sparse[ index ] ] = value;
 			return false;
 		}
 
-		do_insert( index, value );
+		do_insert( value );
 		return true;
 	}
 
@@ -119,26 +127,25 @@ public:
 			return false;
 
 		// Swap and pop
-		swap( index, m_dense.back() );
+		swap( index, to_index( m_dense.back() ) );
 
-		m_data.pop_back();
+		// m_data.pop_back();
 		m_dense.pop_back();
 		m_sparse[ index ] = s_tombstone;
 
 		return true;
 	}
 
-	auto at( const index_type& index ) -> reference { return m_data.at( m_sparse.at( index ) ); }
-	auto at( const index_type& index ) const -> const_reference { return m_data.at( m_sparse.at( index ) ); }
+	auto at( const index_type& index ) -> reference { return m_dense.at( m_sparse.at( index ) ); }
+	auto at( const index_type& index ) const -> const_reference { return m_dense.at( m_sparse.at( index ) ); }
 
-	auto begin() { return m_data.begin(); }
-	auto end() { return m_data.end(); }
+	auto begin() { return m_dense.begin(); }
+	auto end() { return m_dense.end(); }
 
-	auto begin() const { return m_data.begin(); }
-	auto end() const { return m_data.end(); }
+	auto begin() const { return m_dense.begin(); }
+	auto end() const { return m_dense.end(); }
 
 private:
-	std::vector< T > m_data;
 	std::vector< index_type > m_sparse; // indirection from sparse index to dense index
-	std::vector< index_type > m_dense;  // indirection from dense index to sparse index
+	std::vector< T > m_dense;           // indirection from dense index to sparse index
 };
