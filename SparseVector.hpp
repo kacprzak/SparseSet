@@ -10,41 +10,36 @@
 #include <utility>
 #include <vector>
 
-template< typename T >
-concept index_value_pair = requires( T tuple ) {
-	requires std::unsigned_integral< std::remove_cvref_t< decltype( std::get< 0 >( tuple ) ) > >;
-};
+template< typename Key, typename T >
+concept key_value_pair
+    = requires( T pair ) { requires std::same_as< Key, std::remove_cvref_t< decltype( pair.first ) > >; };
 
 /**
  * Container with elements stored contiguously in memory, but indicies remain the same after insertion and erasing.
  */
-template< typename T >
-    requires std::unsigned_integral< T > || index_value_pair< T >
+template< typename Key, typename T = Key >
+    requires std::unsigned_integral< Key > && ( std::same_as< Key, T > || key_value_pair< Key, T > )
 class SparseVector final
 {
 public:
-	using index_type      = std::size_t;
+	using key_type        = Key;
 	using value_type      = T;
 	using size_type       = std::size_t;
 	using reference       = value_type&;
 	using const_reference = const value_type&;
 
 private:
-	static constexpr auto s_tombstone = std::numeric_limits< index_type >::max();
+	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
 
-	auto to_index( const T& value ) -> index_type
+	auto to_key( const T& value ) -> key_type
 	{
-		if constexpr( std::is_unsigned_v< T > )
-		{
-			return value;
-		}
-		else
-		{
+		if constexpr( key_value_pair< Key, T > )
 			return std::get< 0 >( value );
-		}
+		else
+			return value;
 	}
 
-	void swap( const index_type first, const index_type second )
+	void swap( const key_type first, const key_type second )
 	{
 		if( first == second )
 			return;
@@ -55,12 +50,12 @@ private:
 
 	void do_insert( const value_type& value )
 	{
-		const auto index = to_index( value );
+		const auto key = to_key( value );
 
-		if( index >= m_sparse.size() )
-			m_sparse.resize( index + 1u, s_tombstone );
+		if( key >= m_sparse.size() )
+			m_sparse.resize( key + 1u, s_tombstone );
 
-		m_sparse[ index ] = m_dense.size();
+		m_sparse[ key ] = m_dense.size();
 		m_dense.emplace_back( value );
 	}
 
@@ -79,10 +74,7 @@ public:
 	bool empty() const { return m_dense.empty(); }
 	size_type size() const { return m_dense.size(); }
 
-	bool contains( const index_type& index ) const
-	{
-		return index < m_sparse.size() and m_sparse[ index ] != s_tombstone;
-	}
+	bool contains( const key_type& key ) const { return key < m_sparse.size() and m_sparse[ key ] != s_tombstone; }
 
 	void clear()
 	{
@@ -95,9 +87,9 @@ public:
 	 */
 	bool insert( const value_type& value )
 	{
-		const auto index = to_index( value );
+		const auto key = to_key( value );
 
-		if( contains( index ) )
+		if( contains( key ) )
 			return false;
 
 		do_insert( value );
@@ -109,11 +101,11 @@ public:
 	 */
 	bool insert_or_assign( const value_type& value )
 	{
-		const auto index = to_index( value );
+		const auto key = to_key( value );
 
-		if( contains( index ) )
+		if( contains( key ) )
 		{
-			m_dense[ m_sparse[ index ] ] = value;
+			m_dense[ m_sparse[ key ] ] = value;
 			return false;
 		}
 
@@ -121,23 +113,23 @@ public:
 		return true;
 	}
 
-	auto erase( const index_type& index ) -> bool
+	auto erase( const key_type& key ) -> bool
 	{
-		if( not contains( index ) )
+		if( not contains( key ) )
 			return false;
 
 		// Swap and pop
-		swap( index, to_index( m_dense.back() ) );
+		swap( key, to_key( m_dense.back() ) );
 
 		// m_data.pop_back();
 		m_dense.pop_back();
-		m_sparse[ index ] = s_tombstone;
+		m_sparse[ key ] = s_tombstone;
 
 		return true;
 	}
 
-	auto at( const index_type& index ) -> reference { return m_dense.at( m_sparse.at( index ) ); }
-	auto at( const index_type& index ) const -> const_reference { return m_dense.at( m_sparse.at( index ) ); }
+	auto at( const key_type& key ) -> reference { return m_dense.at( m_sparse.at( key ) ); }
+	auto at( const key_type& key ) const -> const_reference { return m_dense.at( m_sparse.at( key ) ); }
 
 	auto begin() { return m_dense.begin(); }
 	auto end() { return m_dense.end(); }
@@ -146,6 +138,6 @@ public:
 	auto end() const { return m_dense.end(); }
 
 private:
-	std::vector< index_type > m_sparse; // indirection from sparse index to dense index
-	std::vector< T > m_dense;           // indirection from dense index to sparse index
+	std::vector< key_type > m_sparse; // indirection from sparse index to dense index
+	std::vector< T > m_dense;         // indirection from dense index to sparse index
 };

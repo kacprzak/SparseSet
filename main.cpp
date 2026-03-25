@@ -50,7 +50,7 @@ TEST( SparseVector, emplace )
 
 TEST( SparseVector, insert )
 {
-	SparseVector< std::pair< std::uint8_t, float > > vec;
+	SparseVector< std::uint8_t, std::pair< std::uint8_t, float > > vec;
 
 	EXPECT_TRUE( vec.insert( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert( { 13, -1.f } ) );
@@ -60,7 +60,7 @@ TEST( SparseVector, insert )
 
 TEST( SparseVector, insert_or_assign )
 {
-	SparseVector< std::pair< std::uint64_t, float > > vec;
+	SparseVector< std::uint64_t, std::pair< std::uint64_t, float > > vec;
 
 	EXPECT_TRUE( vec.insert_or_assign( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert_or_assign( { 13, -1.f } ) );
@@ -70,7 +70,7 @@ TEST( SparseVector, insert_or_assign )
 
 TEST( SparseVector, erase )
 {
-	SparseVector< std::pair< std::uint16_t, float > > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	SparseVector< std::uint16_t, std::pair< std::uint16_t, float > > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	EXPECT_TRUE( vec.erase( 1 ) );
 	EXPECT_EQ( vec.size(), 2 );
