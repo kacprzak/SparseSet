@@ -35,7 +35,7 @@ private:
 	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
 
 	[[nodiscard]]
-	auto to_key( const T& value ) -> key_type
+	static auto to_key( const T& value ) -> key_type
 	{
 		if constexpr( key_value_pair< Key, T > )
 			return std::get< 0 >( value );
@@ -155,6 +155,17 @@ public:
 		m_sparse[ key ] = s_tombstone;
 
 		return true;
+	}
+
+	void sort()
+	{
+		std::sort(
+		    m_dense.begin(), m_dense.end(), []( const auto& a, const auto& b ) { return to_key( a ) < to_key( b ); } );
+
+		std::fill( m_sparse.begin(), m_sparse.end(), s_tombstone );
+
+		for( auto it = m_dense.begin(); it != m_dense.end(); ++it )
+			m_sparse[ to_key( *it ) ] = std::distance( m_dense.begin(), it );
 	}
 
 	[[nodiscard]]

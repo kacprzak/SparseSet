@@ -119,4 +119,24 @@ TEST( SparseSet, const_iterator )
 	EXPECT_EQ( sum, 6 );
 }
 
+TEST( SparseSet, sort )
+{
+	SparseSet< std::uint8_t > vec{ 3, 1, 0, 2, 5 };
+
+	const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
+	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
+
+	EXPECT_FALSE( vec.contains( 4 ) );
+	EXPECT_TRUE( std::equal( vec.begin(), vec.end(), presort.begin(), presort.end() ) );
+
+	vec.sort();
+
+	EXPECT_FALSE( vec.contains( 4 ) );
+	EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
+
+	// Checks if sparse vector is updated.
+	vec.insert_or_assign( 3 );
+	EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
+}
+
 } // namespace
