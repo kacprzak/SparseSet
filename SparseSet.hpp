@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -53,6 +54,9 @@ private:
 	void do_insert( const value_type& value )
 	{
 		const auto key = to_key( value );
+
+		if( key == s_tombstone )
+			throw std::logic_error{ "Invalid key value." };
 
 		if( key >= m_sparse.size() )
 			m_sparse.resize( key + 1u, s_tombstone );

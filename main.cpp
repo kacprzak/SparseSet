@@ -41,16 +41,20 @@ TEST( SparseSet, insert )
 	EXPECT_FALSE( vec.insert( { 13, -1.f } ) );
 	EXPECT_EQ( vec.size(), 1 );
 	EXPECT_EQ( vec.at( 13 ).second, 13.f );
+
+	EXPECT_ANY_THROW( vec.insert( { 255, 1.f } ) );
 }
 
 TEST( SparseSet, insert_or_assign )
 {
-	SparseSet< std::uint64_t, std::pair< std::uint64_t, float > > vec;
+	SparseSet< std::uint8_t, std::pair< std::uint8_t, float > > vec;
 
 	EXPECT_TRUE( vec.insert_or_assign( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert_or_assign( { 13, -1.f } ) );
 	EXPECT_EQ( vec.size(), 1 );
 	EXPECT_EQ( vec.at( 13 ).second, -1.f );
+
+	EXPECT_ANY_THROW( vec.insert_or_assign( { 255, 1.f } ) );
 }
 
 TEST( SparseSet, erase )
