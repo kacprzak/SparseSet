@@ -4,7 +4,7 @@ project('SparseVector', 'cpp',
 
 gtest = dependency('gtest_main')
 
-exe = executable('SparseVector', 'main.cpp', dependencies: [gtest],
+exe = executable('SparseSet_test', 'main.cpp', dependencies: [gtest],
   install : true)
 
 test('basic', exe)
