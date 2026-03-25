@@ -5,6 +5,7 @@
 #include <concepts>
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 #include <limits>
 #include <type_traits>
 #include <utility>
@@ -94,6 +95,16 @@ public:
 	{
 		m_dense.clear();
 		m_sparse.clear();
+	}
+
+	/**
+	 * Returns smallest key without value.
+	 */
+	constexpr key_type find_slot() const
+	{
+		const auto it = std::find( m_sparse.begin(), m_sparse.end(), s_tombstone );
+
+		return std::distance( m_sparse.begin(), it );
 	}
 
 	/**

@@ -1,20 +1,21 @@
 #include <cstdint>
 #include <gtest/gtest.h>
+#include <limits>
 #include <utility>
 
-#include "SparseVector.hpp"
+#include "SparseSet.hpp"
 
 namespace
 {
 
-TEST( SparseVector, ctor )
+TEST( SparseSet, ctor )
 {
 	SparseSet< std::uint8_t > vec;
 
 	EXPECT_TRUE( vec.empty() );
 }
 
-TEST( SparseVector, intializer_list )
+TEST( SparseSet, intializer_list )
 {
 	SparseSet< std::uint16_t > vec{ 1, 6, 32, 5, 42, 16, 16, 16, 16, 16 };
 
@@ -23,7 +24,7 @@ TEST( SparseVector, intializer_list )
 	EXPECT_EQ( vec.at( 42 ), 42 );
 }
 
-TEST( SparseVector, clear )
+TEST( SparseSet, clear )
 {
 	SparseSet< std::uint32_t > vec{ 1 };
 
@@ -32,23 +33,7 @@ TEST( SparseVector, clear )
 	EXPECT_TRUE( vec.empty() );
 }
 
-/*
-TEST( SparseVector, emplace )
-{
-    SparseVector< std::pair< std::uint8_t, float > > vec;
-    EXPECT_EQ( vec.emplace( 0.f ), 0 );
-
-    EXPECT_FALSE( vec.empty() );
-    EXPECT_EQ( vec.size(), 1 );
-
-    EXPECT_EQ( vec.emplace( 0.f ), 1 );
-    EXPECT_EQ( vec.size(), 2 );
-    EXPECT_EQ( vec.emplace( 1.f ), 2 );
-    EXPECT_EQ( vec.size(), 3 );
-}
-*/
-
-TEST( SparseVector, insert )
+TEST( SparseSet, insert )
 {
 	SparseSet< std::uint8_t, std::pair< std::uint8_t, float > > vec;
 
@@ -58,7 +43,7 @@ TEST( SparseVector, insert )
 	EXPECT_EQ( vec.at( 13 ).second, 13.f );
 }
 
-TEST( SparseVector, insert_or_assign )
+TEST( SparseSet, insert_or_assign )
 {
 	SparseSet< std::uint64_t, std::pair< std::uint64_t, float > > vec;
 
@@ -68,7 +53,7 @@ TEST( SparseVector, insert_or_assign )
 	EXPECT_EQ( vec.at( 13 ).second, -1.f );
 }
 
-TEST( SparseVector, erase )
+TEST( SparseSet, erase )
 {
 	SparseSet< std::uint16_t, std::pair< std::uint16_t, float > > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
@@ -81,31 +66,34 @@ TEST( SparseVector, erase )
 	EXPECT_EQ( vec.at( 2 ).second, 2.f );
 }
 
-/*
-TEST( SparseVector, reuse )
+TEST( SparseSet, find_slot )
 {
-    SparseVector< std::pair< std::uint16_t, float > > vec{ 0.f, 1.f, 2.f };
+	SparseSet< std::uint8_t, std::pair< std::uint8_t, float > > vec;
 
-    // Erase second element
-    EXPECT_EQ( vec.at( 1 ).second, 1.f );
-    EXPECT_TRUE( vec.erase( 1 ) );
+	for( int i = 0; i < std::numeric_limits< std::uint8_t >::max(); ++i )
+		vec.insert( { i, i } );
 
-    // Should reuse index 1
-    vec.emplace( 4.f );
-    EXPECT_EQ( vec.at( 1 ).second, 4.f );
+	// Erase second element
+	EXPECT_EQ( vec.at( 1 ).second, 1.f );
+	EXPECT_TRUE( vec.erase( 1 ) );
 
-    // Erase first element
-    EXPECT_TRUE( vec.erase( 0 ) );
-    EXPECT_EQ( vec.at( 1 ).second, 4.f );
+	// Should reuse index 1
+	EXPECT_EQ( vec.find_slot(), 1 );
+	vec.insert( { vec.find_slot(), 4.f } );
+	EXPECT_EQ( vec.at( 1 ).second, 4.f );
 
-    // Should reuse index 0
-    EXPECT_EQ( vec.emplace( 2.f ), 0 );
-    EXPECT_EQ( vec.at( 0 ).second, 2.f );
-    EXPECT_EQ( vec.at( 1 ).second, 4.f );
+	// Erase first element
+	EXPECT_TRUE( vec.erase( 0 ) );
+	EXPECT_EQ( vec.at( 1 ).second, 4.f );
+
+	// Should reuse index 0
+	EXPECT_EQ( vec.find_slot(), 0 );
+	vec.insert( { vec.find_slot(), 2.f } );
+	EXPECT_EQ( vec.at( 0 ).second, 2.f );
+	EXPECT_EQ( vec.at( 1 ).second, 4.f );
 }
-*/
 
-TEST( SparseVector, iterator )
+TEST( SparseSet, iterator )
 {
 	SparseSet< std::uint64_t > vec{ 0, 1, 2, 3 };
 
@@ -116,7 +104,7 @@ TEST( SparseVector, iterator )
 	EXPECT_EQ( sum, 6 );
 }
 
-TEST( SparseVector, const_iterator )
+TEST( SparseSet, const_iterator )
 {
 	const SparseSet< std::uint8_t > vec{ 0, 1, 2, 3 };
 
