@@ -33,7 +33,7 @@ TEST( SparseSet, clear )
 	EXPECT_TRUE( vec.empty() );
 }
 
-TEST( SparseSet, insert )
+TEST( SparseMap, insert )
 {
 	SparseMap< std::uint8_t, float > vec;
 
@@ -45,7 +45,7 @@ TEST( SparseSet, insert )
 	EXPECT_ANY_THROW( vec.insert( { 255, 1.f } ) );
 }
 
-TEST( SparseSet, insert_or_assign )
+TEST( SparseMap, insert_or_assign )
 {
 	SparseMap< std::uint8_t, float > vec;
 
