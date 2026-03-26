@@ -20,8 +20,8 @@ TEST( SparseSet, intializer_list )
 	SparseSet< std::uint16_t > vec{ 1, 6, 32, 5, 42, 16, 16, 16, 16, 16 };
 
 	EXPECT_FALSE( vec.empty() );
-	EXPECT_EQ( vec.size(), 6 );
-	EXPECT_EQ( vec.at( 42 ), 42 );
+	EXPECT_EQ( vec.size(), 6u );
+	EXPECT_TRUE( vec.contains( 42 ) );
 }
 
 TEST( SparseSet, clear )
@@ -39,7 +39,7 @@ TEST( SparseSet, insert )
 
 	EXPECT_TRUE( vec.insert( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert( { 13, -1.f } ) );
-	EXPECT_EQ( vec.size(), 1 );
+	EXPECT_EQ( vec.size(), 1u );
 	EXPECT_EQ( vec.at( 13 ).second, 13.f );
 
 	EXPECT_ANY_THROW( vec.insert( { 255, 1.f } ) );
@@ -51,7 +51,7 @@ TEST( SparseSet, insert_or_assign )
 
 	EXPECT_TRUE( vec.insert_or_assign( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert_or_assign( { 13, -1.f } ) );
-	EXPECT_EQ( vec.size(), 1 );
+	EXPECT_EQ( vec.size(), 1u );
 	EXPECT_EQ( vec.at( 13 ).second, -1.f );
 
 	EXPECT_ANY_THROW( vec.insert_or_assign( { 255, 1.f } ) );
@@ -62,9 +62,9 @@ TEST( SparseSet, erase )
 	SparseMap< std::uint16_t, float > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	EXPECT_TRUE( vec.erase( 1 ) );
-	EXPECT_EQ( vec.size(), 2 );
+	EXPECT_EQ( vec.size(), 2u );
 	EXPECT_FALSE( vec.erase( 1 ) );
-	EXPECT_EQ( vec.size(), 2 );
+	EXPECT_EQ( vec.size(), 2u );
 
 	EXPECT_EQ( vec.at( 0 ).second, 0.f );
 	EXPECT_EQ( vec.at( 2 ).second, 2.f );
