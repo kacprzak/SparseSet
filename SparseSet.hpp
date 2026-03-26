@@ -182,17 +182,17 @@ public:
 	}
 
 	[[nodiscard]]
-	auto at( const key_type& key ) -> reference
+	auto at( const key_type& key )
 	    requires key_value_pair< Key, T >
 	{
-		return m_dense.at( m_sparse.at( key ) );
+		return std::get< 1 >( m_dense.at( m_sparse.at( key ) ) );
 	}
 
 	[[nodiscard]]
-	auto at( const key_type& key ) const -> const_reference
+	auto at( const key_type& key ) const
 	    requires key_value_pair< Key, T >
 	{
-		return m_dense.at( m_sparse.at( key ) );
+		return std::get< 1 >( m_dense.at( m_sparse.at( key ) ) );
 	}
 
 	[[nodiscard]]
