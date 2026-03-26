@@ -1,8 +1,9 @@
-#include <cstdint>
 #include <gtest/gtest.h>
-#include <limits>
 
 #include "SparseSet.hpp"
+
+#include <cstdint>
+#include <limits>
 
 namespace
 {

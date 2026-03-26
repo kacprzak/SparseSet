@@ -12,15 +12,27 @@
 #include <utility>
 #include <vector>
 
+/**
+ * Returns true if T is pair with Key as first element.
+ */
 template< typename Key, typename T >
 concept key_value_pair
     = requires( T pair ) { requires std::same_as< Key, std::remove_cvref_t< decltype( pair.first ) > >; };
 
 /**
+ * Returns true if T is same as Key or has Key as first element of pair.
+ */
+template< typename Key, typename T >
+concept key_convertible = requires {
+	requires std::unsigned_integral< Key >;
+	requires std::same_as< Key, T > || key_value_pair< Key, T >;
+};
+
+/**
  * Container with elements stored contiguously in memory, but indicies remain the same after insertion and erasing.
  */
 template< typename Key, typename T = Key >
-    requires std::unsigned_integral< Key > && ( std::same_as< Key, T > || key_value_pair< Key, T > )
+    requires key_convertible< Key, T >
 class SparseSet final
 {
 public:
