@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <limits>
-#include <utility>
 
 #include "SparseSet.hpp"
 
@@ -35,7 +34,7 @@ TEST( SparseSet, clear )
 
 TEST( SparseSet, insert )
 {
-	SparseSet< std::uint8_t, std::pair< std::uint8_t, float > > vec;
+	SparseMap< std::uint8_t, float > vec;
 
 	EXPECT_TRUE( vec.insert( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert( { 13, -1.f } ) );
@@ -47,7 +46,7 @@ TEST( SparseSet, insert )
 
 TEST( SparseSet, insert_or_assign )
 {
-	SparseSet< std::uint8_t, std::pair< std::uint8_t, float > > vec;
+	SparseMap< std::uint8_t, float > vec;
 
 	EXPECT_TRUE( vec.insert_or_assign( { 13, 13.f } ) );
 	EXPECT_FALSE( vec.insert_or_assign( { 13, -1.f } ) );
@@ -59,7 +58,7 @@ TEST( SparseSet, insert_or_assign )
 
 TEST( SparseSet, erase )
 {
-	SparseSet< std::uint16_t, std::pair< std::uint16_t, float > > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	SparseMap< std::uint16_t, float > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	EXPECT_TRUE( vec.erase( 1 ) );
 	EXPECT_EQ( vec.size(), 2 );
@@ -72,7 +71,7 @@ TEST( SparseSet, erase )
 
 TEST( SparseSet, find_slot )
 {
-	SparseSet< std::uint8_t, std::pair< std::uint8_t, float > > vec;
+	SparseMap< std::uint8_t, float > vec;
 
 	for( int i = 0; i < std::numeric_limits< std::uint8_t >::max(); ++i )
 		vec.insert( { i, i } );

@@ -209,3 +209,6 @@ private:
 	std::vector< key_type > m_sparse;  // indirection from sparse index to dense index
 	std::vector< value_type > m_dense; // value and indirection from dense index to sparse index
 };
+
+template< typename Key, typename T >
+using SparseMap = SparseSet< Key, std::pair< Key, T > >;
