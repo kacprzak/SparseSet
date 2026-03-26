@@ -70,33 +70,6 @@ TEST( SparseMap, erase )
 	EXPECT_EQ( vec.at( 2 ), 2.f );
 }
 
-TEST( SparseMap, find_slot )
-{
-	SparseMap< std::uint8_t, float > vec;
-
-	for( int i = 0; i < std::numeric_limits< std::uint8_t >::max(); ++i )
-		vec.insert( { i, i } );
-
-	// Erase second element
-	EXPECT_EQ( vec.at( 1 ), 1.f );
-	EXPECT_TRUE( vec.erase( 1 ) );
-
-	// Should reuse index 1
-	EXPECT_EQ( vec.find_slot(), 1 );
-	vec.insert( { vec.find_slot(), 4.f } );
-	EXPECT_EQ( vec.at( 1 ), 4.f );
-
-	// Erase first element
-	EXPECT_TRUE( vec.erase( 0 ) );
-	EXPECT_EQ( vec.at( 1 ), 4.f );
-
-	// Should reuse index 0
-	EXPECT_EQ( vec.find_slot(), 0 );
-	vec.insert( { vec.find_slot(), 2.f } );
-	EXPECT_EQ( vec.at( 0 ), 2.f );
-	EXPECT_EQ( vec.at( 1 ), 4.f );
-}
-
 TEST( SparseSet, iterator )
 {
 	SparseSet< std::uint64_t > vec{ 0, 1, 2, 3 };
@@ -137,6 +110,42 @@ TEST( SparseSet, sort )
 	// Checks if sparse vector is updated.
 	vec.insert_or_assign( 3 );
 	EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
+}
+
+TEST( SparseMap, at )
+{
+	SparseMap< std::uint8_t, float > vec;
+
+	vec.insert( { 42, 13.f } );
+	vec.at( 42 ) = 21.f;
+	EXPECT_EQ( vec.at( 42 ), 21.f );
+}
+
+TEST( SparseMap, find_slot )
+{
+	SparseMap< std::uint8_t, float > vec;
+
+	for( int i = 0; i < std::numeric_limits< std::uint8_t >::max(); ++i )
+		vec.insert( { i, i } );
+
+	// Erase second element
+	EXPECT_EQ( vec.at( 1 ), 1.f );
+	EXPECT_TRUE( vec.erase( 1 ) );
+
+	// Should reuse index 1
+	EXPECT_EQ( vec.find_slot(), 1 );
+	vec.insert( { vec.find_slot(), 4.f } );
+	EXPECT_EQ( vec.at( 1 ), 4.f );
+
+	// Erase first element
+	EXPECT_TRUE( vec.erase( 0 ) );
+	EXPECT_EQ( vec.at( 1 ), 4.f );
+
+	// Should reuse index 0
+	EXPECT_EQ( vec.find_slot(), 0 );
+	vec.insert( { vec.find_slot(), 2.f } );
+	EXPECT_EQ( vec.at( 0 ), 2.f );
+	EXPECT_EQ( vec.at( 1 ), 4.f );
 }
 
 } // namespace

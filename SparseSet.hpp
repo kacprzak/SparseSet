@@ -50,7 +50,7 @@ private:
 	static auto to_key( const T& value ) -> key_type
 	{
 		if constexpr( key_value_pair< Key, T > )
-			return std::get< 0 >( value );
+			return value.first;
 		else
 			return value;
 	}
@@ -182,17 +182,17 @@ public:
 	}
 
 	[[nodiscard]]
-	auto at( const key_type& key )
+	auto at( const key_type& key ) -> auto&
 	    requires key_value_pair< Key, T >
 	{
-		return std::get< 1 >( m_dense.at( m_sparse.at( key ) ) );
+		return m_dense.at( m_sparse.at( key ) ).second;
 	}
 
 	[[nodiscard]]
-	auto at( const key_type& key ) const
+	auto at( const key_type& key ) const -> const auto&
 	    requires key_value_pair< Key, T >
 	{
-		return std::get< 1 >( m_dense.at( m_sparse.at( key ) ) );
+		return m_dense.at( m_sparse.at( key ) ).second;
 	}
 
 	[[nodiscard]]
