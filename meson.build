@@ -4,6 +4,6 @@ project('SparseVector', 'cpp',
 
 gtest = dependency('gtest_main')
 
-sparse_set_test = executable('SparseSet_test', 'SparseSet_test.cpp', dependencies: [gtest])
+sparse_set_test = executable('SparseSet_test', 'SparseSet_test.cpp', dependencies: gtest)
 
 test('SparseSet', sparse_set_test)
