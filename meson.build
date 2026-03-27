@@ -8,4 +8,5 @@ gbenchmark = dependency('benchmark')
 sparse_set_test = executable('SparseSet_test', 'SparseSet_test.cpp', dependencies: gtest)
 test('SparseSet', sparse_set_test)
 
-executable('SparseSet_benchmark', 'SparseSet_benchmark.cpp', dependencies: gbenchmark)
+sparse_set_benchmark = executable('SparseSet_benchmark', 'SparseSet_benchmark.cpp', dependencies: gbenchmark)
+benchmark('SparseSet', sparse_set_benchmark)
