@@ -26,8 +26,10 @@ static void BM_SparseSet_contains( benchmark::State& state )
 	{
 		benchmark::DoNotOptimize( set.contains( dist( rng ) ) );
 	}
+
+	state.SetComplexityN( state.range( 0 ) );
 }
-BENCHMARK( BM_SparseSet_contains )->RangeMultiplier( 32 )->Range( 0, 8 << 9 )->Complexity();
+BENCHMARK( BM_SparseSet_contains )->RangeMultiplier( 32 )->Range( 1, 8 << 9 )->Complexity();
 
 static void BM_SparseSet_insert( benchmark::State& state )
 {
@@ -40,8 +42,10 @@ static void BM_SparseSet_insert( benchmark::State& state )
 	{
 		benchmark::DoNotOptimize( set.insert( dist( rng ) ) );
 	}
+
+	state.SetComplexityN( state.range( 0 ) );
 }
-BENCHMARK( BM_SparseSet_insert )->RangeMultiplier( 32 )->Range( 0, 8 << 9 )->Complexity();
+BENCHMARK( BM_SparseSet_insert )->RangeMultiplier( 32 )->Range( 1, 8 << 9 )->Complexity();
 
 static void BM_SparseSet_erase( benchmark::State& state )
 {
@@ -54,7 +58,9 @@ static void BM_SparseSet_erase( benchmark::State& state )
 	{
 		benchmark::DoNotOptimize( set.erase( dist( rng ) ) );
 	}
+
+	state.SetComplexityN( state.range( 0 ) );
 }
-BENCHMARK( BM_SparseSet_erase )->RangeMultiplier( 32 )->Range( 0, 8 << 9 )->Complexity();
+BENCHMARK( BM_SparseSet_erase )->RangeMultiplier( 32 )->Range( 1, 8 << 9 )->Complexity();
 
 BENCHMARK_MAIN();
