@@ -81,6 +81,18 @@ private:
 public:
 	SparseSet() = default;
 
+	template< class InputIt >
+	SparseSet( InputIt first, InputIt last )
+	{
+		const auto& size = std::distance( first, last );
+
+		m_dense.reserve( size );
+		m_sparse.reserve( size );
+
+		for( ; first != last; ++first )
+			insert( *first );
+	}
+
 	SparseSet( std::initializer_list< T > init )
 	{
 		m_dense.reserve( init.size() );
