@@ -87,16 +87,16 @@ TEST( SparseSet, sort )
 	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
 
 	EXPECT_FALSE( set.contains( 4 ) );
-	EXPECT_TRUE( std::equal( set.begin(), set.end(), presort.begin(), presort.end() ) );
+	EXPECT_TRUE( std::ranges::equal( set, presort ) );
 
 	set.sort();
 
 	EXPECT_FALSE( set.contains( 4 ) );
-	EXPECT_TRUE( std::equal( set.begin(), set.end(), postsort.begin(), postsort.end() ) );
+	EXPECT_TRUE( std::ranges::equal( set, postsort ) );
 
 	// Checks if sparse vector is updated.
 	set.insert( 3 );
-	EXPECT_TRUE( std::equal( set.begin(), set.end(), postsort.begin(), postsort.end() ) );
+	EXPECT_TRUE( std::ranges::equal( set, postsort ) );
 }
 
 } // namespace
