@@ -62,13 +62,16 @@ TEST( SparseMap, erase )
 
 TEST( SparseMap, iterator )
 {
+	using namespace std::ranges;
+
 	SparseMap< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
-	int sum = 0;
 	for( const auto& [ k, v ] : map )
-		sum += k;
+		v = -v;
 
-	EXPECT_EQ( sum, 3 );
+	const std::vector< float > expected{ -0.f, -1.f, -2.f };
+
+	EXPECT_TRUE( equal( views::values( map ), expected ) );
 }
 
 TEST( SparseMap, const_iterator )

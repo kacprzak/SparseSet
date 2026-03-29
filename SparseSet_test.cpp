@@ -62,7 +62,7 @@ TEST( SparseSet, iterator )
 	SparseSet< std::uint64_t > set{ 0, 1, 2, 3 };
 
 	int sum = 0;
-	for( const auto& value : set )
+	for( auto& value : set )
 		sum += value;
 
 	EXPECT_EQ( sum, 6 );
