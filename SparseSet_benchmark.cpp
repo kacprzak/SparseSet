@@ -20,7 +20,7 @@ static void BM_SparseSet_contains( benchmark::State& state )
 	std::mt19937 rng( rd() );
 	std::uniform_int_distribution< std::uint16_t > dist( 0, state.range( 0 ) );
 
-	auto set = createSet( state.range( 0 ) );
+	const auto set = createSet( state.range( 0 ) );
 
 	for( auto _ : state )
 	{
@@ -36,7 +36,7 @@ static void BM_SparseSet_insert( benchmark::State& state )
 	std::mt19937 rng( rd() );
 	std::uniform_int_distribution< std::uint16_t > dist( 0, state.range( 0 ) );
 
-	SparseSet< std::uint16_t > set;
+	auto set = createSet( state.range( 0 ) );
 
 	for( auto _ : state )
 	{
