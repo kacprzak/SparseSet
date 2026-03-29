@@ -2,8 +2,10 @@
 
 #include "SparseMap.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <ranges>
 
 namespace
 {
@@ -80,34 +82,37 @@ TEST( SparseMap, const_iterator )
 	EXPECT_EQ( sum, 3 );
 }
 
-/*
 TEST( SparseMap, sort )
 {
-    SparseMap< std::uint8_t, float > vec{ { 3, {} }, { 1, {} }, { 0, {} }, { 2, {} }, { 5, {} } };
+	SparseMap< std::uint8_t, float > vec{ { 3, {} }, { 1, {} }, { 0, {} }, { 2, {} }, { 5, {} } };
 
-    const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
-    const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
+	const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
+	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
 
-    EXPECT_FALSE( vec.contains( 4 ) );
-    EXPECT_TRUE( std::equal( vec.begin(), vec.end(), presort.begin(), presort.end() ) );
+	EXPECT_FALSE( vec.contains( 4 ) );
 
-    auto actualIt   = vec.begin();
-    auto expectedIt = presort.begin();
-    for( ; actualIt != vec.end() and expectedIt != presort.end(); ++actualIt, ++expectedIt )
-    {
-        EXPECT_EQ( actualIt->first, *expectedIt );
-    }
+	{
+		const auto keys_view = std::ranges::views::keys( vec );
+		EXPECT_TRUE( std::ranges::equal( keys_view, presort ) );
+	}
 
-    vec.sort();
+	vec.sort();
 
-    EXPECT_FALSE( vec.contains( 4 ) );
-    EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
+	EXPECT_FALSE( vec.contains( 4 ) );
 
-    // Checks if sparse vector is updated.
-    vec.insert( 3, {} );
-    EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
+	{
+		const auto keys_view = std::ranges::views::keys( vec );
+		EXPECT_TRUE( std::ranges::equal( keys_view, postsort ) );
+	}
+
+	// Checks if sparse vector is updated.
+	vec.insert( 3, {} );
+
+	{
+		const auto keys_view = std::ranges::views::keys( vec );
+		EXPECT_TRUE( std::ranges::equal( keys_view, postsort ) );
+	}
 }
-*/
 
 TEST( SparseMap, at )
 {

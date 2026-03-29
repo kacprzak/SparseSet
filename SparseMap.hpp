@@ -39,9 +39,6 @@ private:
 
 	void do_insert( const key_type& key, const value_type& value )
 	{
-		if( key == s_tombstone )
-			throw std::logic_error{ "Invalid key value." };
-
 		if( key >= m_sparse.size() )
 			m_sparse.resize( key + 1u, s_tombstone );
 
@@ -108,6 +105,9 @@ public:
 	 */
 	bool insert( const key_type& key, const value_type& value )
 	{
+		if( key == s_tombstone )
+			throw std::logic_error{ "Invalid key value." };
+
 		if( contains( key ) )
 			return false;
 
@@ -120,6 +120,9 @@ public:
 	 */
 	bool insert_or_assign( const key_type& key, const value_type& value )
 	{
+		if( key == s_tombstone )
+			throw std::logic_error{ "Invalid key value." };
+
 		if( contains( key ) )
 		{
 			m_dense[ m_sparse[ key ] ] = { key, value };
@@ -165,41 +168,39 @@ public:
 		return m_dense.at( m_sparse.at( key ) ).second;
 	}
 
+	template< typename IterT, typename ValueT, typename ReferenceT >
 	class IteratorProxy
 	{
 	public:
 		using iterator_category = std::random_access_iterator_tag;
+		using iterator_concept  = std::random_access_iterator_tag;
 		using difference_type   = std::ptrdiff_t;
-		using value_type        = std::pair< key_type, T >;
-		using reference         = std::pair< const key_type&, T& >;
-		using pointer           = std::pair< const key_type*, T* >;
+		using value_type        = ValueT;
+		using reference         = ReferenceT;
 
 		IteratorProxy() : m_iterator{} {}
-		IteratorProxy( const std::vector< value_type >::iterator& it ) : m_iterator{ it } {}
+		IteratorProxy( IterT it ) : m_iterator{ it } {}
 		IteratorProxy( const IteratorProxy& ) = default;
 
 		auto operator<=>( const IteratorProxy& other ) const = default;
 
-		auto operator*() const -> reference { return *m_iterator; }
-		auto operator->() const -> pointer { return &*m_iterator; }
+		auto operator*() const -> reference { return { m_iterator->first, m_iterator->second }; }
 		auto operator[]( const difference_type n ) const -> reference { *m_iterator[ n ]; }
 
 		IteratorProxy& operator++() { return ++m_iterator, *this; }
-
 		IteratorProxy operator++( int )
 		{
-			auto temp = *this;
+			auto copy = *this;
 			++m_iterator;
-			return temp;
+			return copy;
 		}
 
 		IteratorProxy& operator--() { return --m_iterator, *this; }
-
 		IteratorProxy operator--( int )
 		{
-			auto temp = *this;
+			auto copy = *this;
 			--m_iterator;
-			return temp;
+			return copy;
 		}
 
 		IteratorProxy& operator+=( const difference_type n )
@@ -210,8 +211,8 @@ public:
 
 		IteratorProxy operator+( const difference_type n ) const
 		{
-			auto temp = *this;
-			return temp + n;
+			auto copy = *this;
+			return copy + n;
 		}
 
 		IteratorProxy& operator-=( const difference_type n )
@@ -222,8 +223,8 @@ public:
 
 		IteratorProxy operator-( const difference_type n ) const
 		{
-			auto temp = *this;
-			return temp - n;
+			auto copy = *this;
+			return copy - n;
 		}
 
 		difference_type operator-( const IteratorProxy& other ) const { return m_iterator - other.m_iterator; }
@@ -231,33 +232,65 @@ public:
 		friend IteratorProxy operator+( difference_type n, IteratorProxy rhs ) { return rhs + n; }
 
 	private:
-		std::vector< value_type >::iterator m_iterator;
+		IterT m_iterator;
 	};
 
-	// static_assert( std::random_access_iterator< IteratorProxy > );
+	using iterator       = IteratorProxy< typename std::vector< std::pair< Key, T > >::iterator,
+	                                      typename std::pair< Key&, T& >,
+	                                      typename std::pair< const Key&, T& > >;
+	using const_iterator = IteratorProxy< typename std::vector< std::pair< Key, T > >::const_iterator,
+	                                      typename std::pair< Key&, T& >,
+	                                      typename std::pair< const Key&, const T& > >;
+
+	static_assert( std::random_access_iterator< iterator > );
+	static_assert( std::random_access_iterator< const_iterator > );
 
 	[[nodiscard]]
-	constexpr auto begin() noexcept -> IteratorProxy
+	constexpr auto begin() noexcept -> iterator
 	{
-		return IteratorProxy{ m_dense.begin() };
+		return iterator{ m_dense.begin() };
 	}
 
 	[[nodiscard]]
-	constexpr auto end() noexcept -> IteratorProxy
+	constexpr auto end() noexcept -> iterator
 	{
-		return IteratorProxy{ m_dense.end() };
+		return iterator{ m_dense.end() };
 	}
 
 	[[nodiscard]]
-	constexpr auto begin() const noexcept -> IteratorProxy
+	constexpr auto begin() const noexcept -> const_iterator
 	{
-		return IteratorProxy{ m_dense.begin() };
+		return const_iterator{ m_dense.begin() };
 	}
 
 	[[nodiscard]]
-	constexpr auto end() const noexcept -> IteratorProxy
+	constexpr auto end() const noexcept -> const_iterator
 	{
-		return IteratorProxy{ m_dense.end() };
+		return const_iterator{ m_dense.end() };
+	}
+
+	[[nodiscard]]
+	constexpr auto cbegin() noexcept -> const_iterator
+	{
+		return const_iterator{ m_dense.cbegin() };
+	}
+
+	[[nodiscard]]
+	constexpr auto cend() noexcept -> const_iterator
+	{
+		return const_iterator{ m_dense.cend() };
+	}
+
+	[[nodiscard]]
+	constexpr auto cbegin() const noexcept -> const_iterator
+	{
+		return const_iterator{ m_dense.cbegin() };
+	}
+
+	[[nodiscard]]
+	constexpr auto cend() const noexcept -> const_iterator
+	{
+		return const_iterator{ m_dense.cend() };
 	}
 
 private:
