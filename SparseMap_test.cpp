@@ -84,34 +84,24 @@ TEST( SparseMap, const_iterator )
 
 TEST( SparseMap, sort )
 {
+	using namespace std::ranges;
+
 	SparseMap< std::uint8_t, float > map{ { 3, {} }, { 1, {} }, { 0, {} }, { 2, {} }, { 5, {} } };
 
 	const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
 	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
 
 	EXPECT_FALSE( map.contains( 4 ) );
-
-	{
-		const auto keys_view = std::ranges::views::keys( map );
-		EXPECT_TRUE( std::ranges::equal( keys_view, presort ) );
-	}
+	EXPECT_TRUE( equal( views::keys( map ), presort ) );
 
 	map.sort();
 
 	EXPECT_FALSE( map.contains( 4 ) );
-
-	{
-		const auto keys_view = std::ranges::views::keys( map );
-		EXPECT_TRUE( std::ranges::equal( keys_view, postsort ) );
-	}
+	EXPECT_TRUE( equal( views::keys( map ), postsort ) );
 
 	// Checks if sparse vector is updated.
 	map.insert( 3, {} );
-
-	{
-		const auto keys_view = std::ranges::views::keys( map );
-		EXPECT_TRUE( std::ranges::equal( keys_view, postsort ) );
-	}
+	EXPECT_TRUE( equal( views::keys( map ), postsort ) );
 }
 
 TEST( SparseMap, at )
