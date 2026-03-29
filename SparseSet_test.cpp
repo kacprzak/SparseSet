@@ -3,7 +3,6 @@
 #include "SparseSet.hpp"
 
 #include <cstdint>
-#include <limits>
 
 namespace
 {
@@ -33,41 +32,29 @@ TEST( SparseSet, clear )
 	EXPECT_TRUE( vec.empty() );
 }
 
-TEST( SparseMap, insert )
+TEST( SparseSet, insert )
 {
-	SparseMap< std::uint8_t, float > vec;
+	SparseSet< std::uint8_t > vec;
 
-	EXPECT_TRUE( vec.insert( { 13, 13.f } ) );
-	EXPECT_FALSE( vec.insert( { 13, -1.f } ) );
+	EXPECT_TRUE( vec.insert( 13 ) );
+	EXPECT_FALSE( vec.insert( 13 ) );
 	EXPECT_EQ( vec.size(), 1u );
-	EXPECT_EQ( vec.at( 13 ), 13.f );
+	EXPECT_TRUE( vec.contains( 13 ) );
 
-	EXPECT_ANY_THROW( vec.insert( { 255, 1.f } ) );
+	EXPECT_ANY_THROW( vec.insert( 255 ) );
 }
 
-TEST( SparseMap, insert_or_assign )
+TEST( SparseSet, erase )
 {
-	SparseMap< std::uint8_t, float > vec;
-
-	EXPECT_TRUE( vec.insert_or_assign( { 13, 13.f } ) );
-	EXPECT_FALSE( vec.insert_or_assign( { 13, -1.f } ) );
-	EXPECT_EQ( vec.size(), 1u );
-	EXPECT_EQ( vec.at( 13 ), -1.f );
-
-	EXPECT_ANY_THROW( vec.insert_or_assign( { 255, 1.f } ) );
-}
-
-TEST( SparseMap, erase )
-{
-	SparseMap< std::uint16_t, float > vec{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	SparseSet< std::uint16_t > vec{ 0, 1, 2 };
 
 	EXPECT_TRUE( vec.erase( 1 ) );
 	EXPECT_EQ( vec.size(), 2u );
 	EXPECT_FALSE( vec.erase( 1 ) );
 	EXPECT_EQ( vec.size(), 2u );
 
-	EXPECT_EQ( vec.at( 0 ), 0.f );
-	EXPECT_EQ( vec.at( 2 ), 2.f );
+	EXPECT_TRUE( vec.contains( 0 ) );
+	EXPECT_TRUE( vec.contains( 2 ) );
 }
 
 TEST( SparseSet, iterator )
@@ -108,44 +95,8 @@ TEST( SparseSet, sort )
 	EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
 
 	// Checks if sparse vector is updated.
-	vec.insert_or_assign( 3 );
+	vec.insert( 3 );
 	EXPECT_TRUE( std::equal( vec.begin(), vec.end(), postsort.begin(), postsort.end() ) );
-}
-
-TEST( SparseMap, at )
-{
-	SparseMap< std::uint8_t, float > vec;
-
-	vec.insert( { 42, 13.f } );
-	vec.at( 42 ) = 21.f;
-	EXPECT_EQ( vec.at( 42 ), 21.f );
-}
-
-TEST( SparseMap, find_slot )
-{
-	SparseMap< std::uint8_t, float > vec;
-
-	for( int i = 0; i < std::numeric_limits< std::uint8_t >::max(); ++i )
-		vec.insert( { i, i } );
-
-	// Erase second element
-	EXPECT_EQ( vec.at( 1 ), 1.f );
-	EXPECT_TRUE( vec.erase( 1 ) );
-
-	// Should reuse index 1
-	EXPECT_EQ( vec.find_slot(), 1 );
-	vec.insert( { vec.find_slot(), 4.f } );
-	EXPECT_EQ( vec.at( 1 ), 4.f );
-
-	// Erase first element
-	EXPECT_TRUE( vec.erase( 0 ) );
-	EXPECT_EQ( vec.at( 1 ), 4.f );
-
-	// Should reuse index 0
-	EXPECT_EQ( vec.find_slot(), 0 );
-	vec.insert( { vec.find_slot(), 2.f } );
-	EXPECT_EQ( vec.at( 0 ), 2.f );
-	EXPECT_EQ( vec.at( 1 ), 4.f );
 }
 
 } // namespace

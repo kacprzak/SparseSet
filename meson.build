@@ -5,8 +5,7 @@ project('SparseVector', 'cpp',
 gtest = dependency('gtest_main')
 gbenchmark = dependency('benchmark')
 
-sparse_set_test = executable('SparseSet_test', 'SparseSet_test.cpp', dependencies: gtest)
-test('SparseSet', sparse_set_test)
+test('SparseSet', executable('SparseSet_test', 'SparseSet_test.cpp', dependencies: gtest))
+test('SparseMap', executable('SparseMap_test', 'SparseMap_test.cpp', dependencies: gtest))
 
-sparse_set_benchmark = executable('SparseSet_benchmark', 'SparseSet_benchmark.cpp', dependencies: gbenchmark)
-benchmark('SparseSet', sparse_set_benchmark)
+benchmark('SparseSet', executable('SparseSet_benchmark', 'SparseSet_benchmark.cpp', dependencies: gbenchmark))
