@@ -31,9 +31,6 @@ private:
 
 	void swap( const key_type first, const key_type second )
 	{
-		if( first == second )
-			return;
-
 		std::swap( m_dense[ m_sparse[ first ] ], m_dense[ m_sparse[ second ] ] );
 		std::swap( m_sparse[ first ], m_sparse[ second ] );
 	}
