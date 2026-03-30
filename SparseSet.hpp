@@ -55,8 +55,7 @@ public:
 	{
 		const auto& size = std::distance( first, last );
 
-		m_dense.reserve( size );
-		m_sparse.reserve( size );
+		reserve( size );
 
 		for( ; first != last; ++first )
 		{
