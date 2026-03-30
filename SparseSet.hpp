@@ -53,9 +53,7 @@ public:
 	template< typename InputIt >
 	SparseSet( InputIt first, InputIt last )
 	{
-		const auto& size = std::distance( first, last );
-
-		reserve( size );
+		reserve( std::distance( first, last ) );
 
 		for( ; first != last; ++first )
 			insert( *first );
