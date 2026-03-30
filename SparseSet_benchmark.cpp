@@ -38,8 +38,9 @@ static void BM_SparseSet_contains( benchmark::State& state )
 	}
 
 	state.SetItemsProcessed( state.iterations() * size );
+	state.SetComplexityN( size );
 }
-BENCHMARK( BM_SparseSet_contains )->Range( 8, 8 << 10 )->Complexity();
+BENCHMARK( BM_SparseSet_contains )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
 
 static void BM_SparseSet_insert( benchmark::State& state )
 {
@@ -60,8 +61,9 @@ static void BM_SparseSet_insert( benchmark::State& state )
 	}
 
 	state.SetItemsProcessed( state.iterations() * size );
+	state.SetComplexityN( size );
 }
-BENCHMARK( BM_SparseSet_insert )->Range( 8, 8 << 10 )->Complexity();
+BENCHMARK( BM_SparseSet_insert )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
 
 static void BM_SparseSet_erase( benchmark::State& state )
 {
@@ -82,7 +84,8 @@ static void BM_SparseSet_erase( benchmark::State& state )
 	}
 
 	state.SetItemsProcessed( state.iterations() * size );
+	state.SetComplexityN( size );
 }
-BENCHMARK( BM_SparseSet_erase )->Range( 8, 8 << 10 )->Complexity();
+BENCHMARK( BM_SparseSet_erase )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
 
 BENCHMARK_MAIN();
