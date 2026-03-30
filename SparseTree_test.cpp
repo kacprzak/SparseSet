@@ -50,4 +50,26 @@ TEST( SparseTree, parent )
 	EXPECT_EQ( ( *tree.parent( 1 ) ).second, 0.f );
 }
 
+TEST( SparseTree, children )
+{
+	SparseTree< std::uint8_t, float > tree;
+
+	// Root
+	EXPECT_TRUE( tree.insert( 0, 0.f ) );
+	// Children
+	EXPECT_TRUE( tree.insert( 3, 3.f, 0 ) );
+	EXPECT_TRUE( tree.insert( 2, 2.f, 0 ) );
+	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
+
+	const std::vector< float > expected{ 3.f, 2.f, 1.f };
+	std::vector< float > result;
+
+	for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
+	{
+		result.push_back( ( *it ).second );
+	}
+
+	EXPECT_EQ( result, expected );
+}
+
 } // namespace
