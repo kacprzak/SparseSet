@@ -31,7 +31,10 @@ static void BM_SparseSet_contains( benchmark::State& state )
 		state.ResumeTiming();
 
 		for( auto i = 0u; i < size; ++i )
-			benchmark::DoNotOptimize( set.contains( std::rand() % size ) );
+		{
+			bool contains = set.contains( std::rand() % size );
+			benchmark::DoNotOptimize( contains );
+		}
 	}
 
 	state.SetItemsProcessed( state.iterations() * size );
@@ -50,7 +53,10 @@ static void BM_SparseSet_insert( benchmark::State& state )
 		state.ResumeTiming();
 
 		for( auto i = 0u; i < size; ++i )
-			benchmark::DoNotOptimize( set.insert( std::rand() % size ) );
+		{
+			bool success = set.insert( std::rand() % size );
+			benchmark::DoNotOptimize( success );
+		}
 	}
 
 	state.SetItemsProcessed( state.iterations() * size );
@@ -69,7 +75,10 @@ static void BM_SparseSet_erase( benchmark::State& state )
 		state.ResumeTiming();
 
 		for( auto i = 0u; i < size; ++i )
-			benchmark::DoNotOptimize( set.erase( std::rand() % size ) );
+		{
+			bool success = set.erase( std::rand() % size );
+			benchmark::DoNotOptimize( success );
+		}
 	}
 
 	state.SetItemsProcessed( state.iterations() * size );
