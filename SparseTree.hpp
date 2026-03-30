@@ -43,7 +43,21 @@ public:
 	auto at( const key_type& key ) -> reference { return m_map.at( key ); }
 	auto at( const key_type& key ) const -> const_reference { return m_map.at( key ); }
 
-	auto parent( const key_type& key ) -> iterator { return m_map.find( m_relations.at( key ).parent ); }
+	auto parent( const key_type& key ) -> iterator
+	{
+		if( not m_relations.contains( key ) )
+			return end();
+
+		return m_map.find( m_relations.at( key ).parent );
+	}
+
+	auto parent( const key_type& key ) const -> const_iterator
+	{
+		if( not m_relations.contains( key ) )
+			return end();
+
+		return m_map.find( m_relations.at( key ).parent );
+	}
 
 	[[nodiscard]] constexpr auto begin() noexcept -> iterator { return m_map.begin(); }
 	[[nodiscard]] constexpr auto end() noexcept -> iterator { return m_map.end(); }
