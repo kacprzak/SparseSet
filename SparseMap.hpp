@@ -171,7 +171,8 @@ public:
 
 		IteratorProxy() : m_iterator{} {}
 		IteratorProxy( IterT it ) : m_iterator{ it } {}
-		IteratorProxy( const IteratorProxy& ) = default;
+		IteratorProxy( const IteratorProxy& )            = default;
+		IteratorProxy& operator=( const IteratorProxy& ) = default;
 
 		auto operator<=>( const IteratorProxy& other ) const = default;
 
