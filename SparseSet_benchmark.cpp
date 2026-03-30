@@ -88,4 +88,22 @@ static void BM_SparseSet_erase( benchmark::State& state )
 }
 BENCHMARK( BM_SparseSet_erase )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
 
+static void BM_SparseSet_sort( benchmark::State& state )
+{
+	const auto size = state.range( 0 );
+	SparseSet< std::uint16_t > set;
+
+	for( auto _ : state )
+	{
+		state.PauseTiming();
+		set = createRandomSet( size );
+		state.ResumeTiming();
+
+		set.sort();
+	}
+
+	state.SetComplexityN( size );
+}
+BENCHMARK( BM_SparseSet_sort )->Range( 8, 8 << 10 )->Complexity( benchmark::oNLogN );
+
 BENCHMARK_MAIN();
