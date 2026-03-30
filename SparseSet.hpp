@@ -58,9 +58,7 @@ public:
 		reserve( size );
 
 		for( ; first != last; ++first )
-		{
 			insert( *first );
-		}
 	}
 
 	SparseSet( std::initializer_list< key_type > init ) : SparseSet{ init.begin(), init.end() } {}
