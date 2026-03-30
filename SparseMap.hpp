@@ -59,17 +59,8 @@ public:
 	{
 	}
 
-	[[nodiscard]]
-	constexpr bool empty() const noexcept
-	{
-		return m_dense.empty();
-	}
-
-	[[nodiscard]]
-	constexpr size_type size() const noexcept
-	{
-		return m_dense.size();
-	}
+	[[nodiscard]] constexpr bool empty() const noexcept { return m_dense.empty(); }
+	[[nodiscard]] constexpr size_type size() const noexcept { return m_dense.size(); }
 
 	[[nodiscard]]
 	constexpr bool contains( const key_type& key ) const noexcept
@@ -245,52 +236,32 @@ public:
 	static_assert( std::random_access_iterator< iterator > );
 	static_assert( std::random_access_iterator< const_iterator > );
 
-	[[nodiscard]]
-	constexpr auto begin() noexcept -> iterator
-	{
-		return iterator{ m_dense.begin() };
-	}
-
-	[[nodiscard]]
-	constexpr auto end() noexcept -> iterator
-	{
-		return iterator{ m_dense.end() };
-	}
-
-	[[nodiscard]]
-	constexpr auto begin() const noexcept -> const_iterator
-	{
-		return const_iterator{ m_dense.begin() };
-	}
-
-	[[nodiscard]]
-	constexpr auto end() const noexcept -> const_iterator
-	{
-		return const_iterator{ m_dense.end() };
-	}
-
-	[[nodiscard]]
-	constexpr auto cbegin() noexcept -> const_iterator
+	[[nodiscard]] constexpr auto begin() noexcept -> iterator { return iterator{ m_dense.begin() }; }
+	[[nodiscard]] constexpr auto end() noexcept -> iterator { return iterator{ m_dense.end() }; }
+	[[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return const_iterator{ m_dense.begin() }; }
+	[[nodiscard]] constexpr auto end() const noexcept -> const_iterator { return const_iterator{ m_dense.end() }; }
+	[[nodiscard]] constexpr auto cbegin() noexcept -> const_iterator { return const_iterator{ m_dense.cbegin() }; }
+	[[nodiscard]] constexpr auto cend() noexcept -> const_iterator { return const_iterator{ m_dense.cend() }; }
+	[[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator
 	{
 		return const_iterator{ m_dense.cbegin() };
 	}
+	[[nodiscard]] constexpr auto cend() const noexcept -> const_iterator { return const_iterator{ m_dense.cend() }; }
 
-	[[nodiscard]]
-	constexpr auto cend() noexcept -> const_iterator
+	constexpr auto find( const key_type& key ) -> iterator
 	{
-		return const_iterator{ m_dense.cend() };
+		if( contains( key ) )
+			return iterator{ m_dense.begin() + m_sparse[ key ] };
+		else
+			return end();
 	}
 
-	[[nodiscard]]
-	constexpr auto cbegin() const noexcept -> const_iterator
+	constexpr auto find( const key_type& key ) const -> const_iterator
 	{
-		return const_iterator{ m_dense.cbegin() };
-	}
-
-	[[nodiscard]]
-	constexpr auto cend() const noexcept -> const_iterator
-	{
-		return const_iterator{ m_dense.cend() };
+		if( contains( key ) )
+			return const_iterator{ m_dense.begin() + m_sparse[ key ] };
+		else
+			return end();
 	}
 
 private:

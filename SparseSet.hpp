@@ -58,17 +58,8 @@ public:
 
 	SparseSet( std::initializer_list< key_type > init ) : SparseSet{ init.begin(), init.end() } {}
 
-	[[nodiscard]]
-	constexpr bool empty() const noexcept
-	{
-		return m_dense.empty();
-	}
-
-	[[nodiscard]]
-	constexpr size_type size() const noexcept
-	{
-		return m_dense.size();
-	}
+	[[nodiscard]] constexpr bool empty() const noexcept { return m_dense.empty(); }
+	[[nodiscard]] constexpr size_type size() const noexcept { return m_dense.size(); }
 
 	[[nodiscard]]
 	constexpr bool contains( const key_type& key ) const noexcept
@@ -126,17 +117,8 @@ public:
 			m_sparse[ *it ] = std::distance( m_dense.begin(), it );
 	}
 
-	[[nodiscard]]
-	constexpr auto begin() const noexcept
-	{
-		return m_dense.begin();
-	}
-
-	[[nodiscard]]
-	constexpr auto end() const noexcept
-	{
-		return m_dense.end();
-	}
+	[[nodiscard]] constexpr auto begin() const noexcept { return m_dense.begin(); }
+	[[nodiscard]] constexpr auto end() const noexcept { return m_dense.end(); }
 
 private:
 	std::vector< key_type > m_sparse; // indirection from sparse index to dense index
