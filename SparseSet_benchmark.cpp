@@ -8,59 +8,72 @@
 
 static std::random_device rd;
 
-static auto createSet( std::size_t size ) -> SparseSet< std::uint16_t >
+static auto createRandomSet( std::size_t size ) -> SparseSet< std::uint16_t >
 {
-	const auto& range = benchmark::CreateDenseRange( 0, size, 2 );
+	SparseSet< std::uint16_t > set;
+	set.reserve( size );
 
-	return SparseSet< std::uint16_t >{ range.begin(), range.end() };
+	for( auto i = 0u; i < size; ++i )
+		set.insert( std::rand() % size );
+
+	return set;
 }
 
 static void BM_SparseSet_contains( benchmark::State& state )
 {
-	std::mt19937 rng( rd() );
-	std::uniform_int_distribution< std::uint16_t > dist( 0, state.range( 0 ) );
-
-	const auto set = createSet( state.range( 0 ) );
+	const auto size = state.range( 0 );
+	SparseSet< std::uint16_t > set;
 
 	for( auto _ : state )
 	{
-		benchmark::DoNotOptimize( set.contains( dist( rng ) ) );
+		state.PauseTiming();
+		set = createRandomSet( size );
+		state.ResumeTiming();
+
+		for( auto i = 0u; i < size; ++i )
+			benchmark::DoNotOptimize( set.contains( std::rand() % size ) );
 	}
 
-	state.SetComplexityN( state.range( 0 ) );
+	state.SetItemsProcessed( state.iterations() * size );
 }
-BENCHMARK( BM_SparseSet_contains )->Range( 8, 8 << 9 )->Complexity();
+BENCHMARK( BM_SparseSet_contains )->Range( 8, 8 << 10 )->Complexity();
 
 static void BM_SparseSet_insert( benchmark::State& state )
 {
-	std::mt19937 rng( rd() );
-	std::uniform_int_distribution< std::uint16_t > dist( 0, state.range( 0 ) );
-
-	auto set = createSet( state.range( 0 ) );
+	const auto size = state.range( 0 );
+	SparseSet< std::uint16_t > set;
 
 	for( auto _ : state )
 	{
-		benchmark::DoNotOptimize( set.insert( dist( rng ) ) );
+		state.PauseTiming();
+		set = createRandomSet( size );
+		state.ResumeTiming();
+
+		for( auto i = 0u; i < size; ++i )
+			benchmark::DoNotOptimize( set.insert( std::rand() % size ) );
 	}
 
-	state.SetComplexityN( state.range( 0 ) );
+	state.SetItemsProcessed( state.iterations() * size );
 }
-BENCHMARK( BM_SparseSet_insert )->Range( 8, 8 << 9 )->Complexity();
+BENCHMARK( BM_SparseSet_insert )->Range( 8, 8 << 10 )->Complexity();
 
 static void BM_SparseSet_erase( benchmark::State& state )
 {
-	std::mt19937 rng( rd() );
-	std::uniform_int_distribution< std::uint16_t > dist( 0, state.range( 0 ) );
-
-	auto set = createSet( state.range( 0 ) );
+	const auto size = state.range( 0 );
+	SparseSet< std::uint16_t > set;
 
 	for( auto _ : state )
 	{
-		benchmark::DoNotOptimize( set.erase( dist( rng ) ) );
+		state.PauseTiming();
+		set = createRandomSet( size );
+		state.ResumeTiming();
+
+		for( auto i = 0u; i < size; ++i )
+			benchmark::DoNotOptimize( set.erase( std::rand() % size ) );
 	}
 
-	state.SetComplexityN( state.range( 0 ) );
+	state.SetItemsProcessed( state.iterations() * size );
 }
-BENCHMARK( BM_SparseSet_erase )->Range( 8, 8 << 9 )->Complexity();
+BENCHMARK( BM_SparseSet_erase )->Range( 8, 8 << 10 )->Complexity();
 
 BENCHMARK_MAIN();

@@ -90,6 +90,12 @@ public:
 		m_sparse.clear();
 	}
 
+	constexpr void reserve( size_type n )
+	{
+		m_dense.reserve( n );
+		m_sparse.reserve( n );
+	}
+
 	/**
 	 * Returns true if insertion took place and false if there is already value under index.
 	 */
