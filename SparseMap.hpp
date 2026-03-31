@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <concepts>
 #include <cstddef>
 #include <initializer_list>
 #include <iterator>
@@ -11,10 +12,19 @@
 #include <vector>
 
 /**
- * Container with elements stored contiguously in memory, but indicies remain the same after insertion and erasing.
+ * Map of items that are stored packed in memory.
+ *
+ * This class allows for fast iteration on all stored items like when using std::vector, but this collection provides
+ * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achived at expense of memory.
+ *
+ * Items are not stored in keys order, unless `sort` is called. Any modification may reorder items.
+ *
+ * @tparam Key key type. Using large values for keys will require to allocate memory for all smaller key values even if
+ * not used. This is why it is recommended to use smallest type possible, for example std::uint16_t.
+ * @tparam T value type
  */
 template< typename Key, typename T >
-    requires std::unsigned_integral< Key >
+    requires std::unsigned_integral< Key > && std::swappable< T >
 class SparseMap final
 {
 public:
@@ -124,6 +134,9 @@ public:
 		return true;
 	}
 
+	/**
+	 * Returns true if erase took place.
+	 */
 	bool erase( const key_type& key )
 	{
 		if( not contains( key ) )
@@ -138,6 +151,9 @@ public:
 		return true;
 	}
 
+	/**
+	 * Sorts items in memory in key order.
+	 */
 	void sort()
 	{
 		std::sort( m_dense.begin(), m_dense.end(), []( const auto& a, const auto& b ) { return a.first < b.first; } );

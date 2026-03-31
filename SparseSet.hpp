@@ -12,7 +12,15 @@
 #include <vector>
 
 /**
- * Set of unsigned integers that are stored packed in memory.
+ * Set of keys that are stored packed in memory.
+ *
+ * This class allows for fast iteration on all stored keys like when using std::vector, but this collection provides
+ * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achived at expense of memory.
+ *
+ * Keys are not stored in order, unless `sort` is called. Any modification may reorder items.
+ *
+ * @tparam Key key type. Using large values for keys will require to allocate memory for all smaller key values even if
+ * not used. This is why it is recommended to use smallest type possible, for example std::uint16_t.
  */
 template< typename Key >
     requires std::unsigned_integral< Key >
@@ -94,6 +102,9 @@ public:
 		return true;
 	}
 
+	/**
+	 * Returns true if erase took place.
+	 */
 	bool erase( const key_type& key )
 	{
 		if( not contains( key ) )
@@ -108,6 +119,9 @@ public:
 		return true;
 	}
 
+	/**
+	 * Sorts stored keys in memory.
+	 */
 	constexpr void sort()
 	{
 		std::sort( m_dense.begin(), m_dense.end() );
