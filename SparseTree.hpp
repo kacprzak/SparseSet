@@ -65,7 +65,48 @@ public:
 		return m_map.insert( key, value );
 	}
 
-	bool erase( const key_type& key ) { return m_map.erase( key ); }
+	bool erase( const key_type& key )
+	{
+		if( m_relations.contains( key ) )
+		{
+			const auto relations = m_relations.at( key );
+			// Erase children
+			auto child = relations.children;
+			while( child != s_tombstone )
+			{
+				const auto next = m_relations.at( child ).next;
+				erase( child );
+				child = next;
+			}
+
+			// Detach from parent
+			if( relations.parent != s_tombstone )
+			{
+				auto& parent_relations = m_relations.at( relations.parent );
+				if( parent_relations.children == key )
+				{
+					// If first child.
+					parent_relations.children = relations.next;
+				}
+				else
+				{
+					// Scan parent children until previous found.
+					for( auto it = m_map.find( parent_relations.children ); it != end(); it = children_next( it ) )
+					{
+						auto& child_relations = m_relations.at( ( *it ).first );
+						if( child_relations.next == key )
+						{
+							child_relations.next = relations.next;
+							break;
+						}
+					}
+				}
+			}
+			m_relations.erase( key );
+		}
+
+		return m_map.erase( key );
+	}
 
 	auto at( const key_type& key ) -> reference { return m_map.at( key ); }
 	auto at( const key_type& key ) const -> const_reference { return m_map.at( key ); }

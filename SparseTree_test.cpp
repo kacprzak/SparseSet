@@ -71,15 +71,32 @@ TEST( SparseTree, children )
 	EXPECT_TRUE( tree.insert( 2, 2.f, 0 ) );
 	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
 
-	const std::vector< float > expected{ 3.f, 2.f, 1.f };
-	std::vector< float > result;
+	EXPECT_TRUE( tree.insert( 4, 4.f, 2 ) );
+	EXPECT_TRUE( tree.insert( 5, 5.f, 2 ) );
 
-	for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
 	{
-		result.push_back( ( *it ).second );
+		const std::vector< float > expected{ 3.f, 2.f, 1.f };
+
+		std::vector< float > result;
+		for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
+			result.push_back( ( *it ).second );
+
+		EXPECT_EQ( result, expected );
 	}
 
-	EXPECT_EQ( result, expected );
+	EXPECT_EQ( tree.size(), 6u );
+	tree.erase( 2 );
+	EXPECT_EQ( tree.size(), 3u );
+
+	{
+		const std::vector< float > expected{ 3.f, 1.f };
+
+		std::vector< float > result;
+		for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
+			result.push_back( ( *it ).second );
+
+		EXPECT_EQ( result, expected );
+	}
 }
 
 } // namespace
