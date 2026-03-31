@@ -17,7 +17,7 @@ auto createRandomSet( std::size_t size ) -> SparseTree< std::uint16_t, float >
 	tree.insert( 0u, {} );
 
 	for( auto i = 1u; i < size; ++i )
-		tree.insert( i, {}, std::rand() % tree.size() );
+		tree.insert( i, i, std::rand() % tree.size() );
 
 	return tree;
 }
@@ -49,4 +49,20 @@ BENCHMARK_DEFINE_F( BM_SparseTree, erase )( benchmark::State& state )
 	state.SetItemsProcessed( state.iterations() * size );
 	state.SetComplexityN( size );
 }
-BENCHMARK_REGISTER_F( BM_SparseTree, erase )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
+BENCHMARK_REGISTER_F( BM_SparseTree, erase )->Range( 8, 8 << 10 )->Complexity();
+
+BENCHMARK_DEFINE_F( BM_SparseTree, for_each_bfs )( benchmark::State& state )
+{
+	const auto size = state.range( 0 );
+
+	for( auto _ : state )
+	{
+		float sum = 0.f;
+		tree.for_each_bfs( [ &sum ]( const auto& kv ) { sum += kv.second; } );
+		benchmark::DoNotOptimize( sum );
+	}
+
+	state.SetItemsProcessed( state.iterations() * size );
+	state.SetComplexityN( size );
+}
+BENCHMARK_REGISTER_F( BM_SparseTree, for_each_bfs )->Range( 8, 8 << 10 )->Complexity();
