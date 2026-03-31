@@ -124,7 +124,7 @@ public:
 		return true;
 	}
 
-	auto erase( const key_type& key ) -> bool
+	bool erase( const key_type& key )
 	{
 		if( not contains( key ) )
 			return false;

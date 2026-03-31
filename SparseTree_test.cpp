@@ -38,6 +38,16 @@ TEST( SparseTree, insert )
 	EXPECT_EQ( tree.at( 0 ), 2.f );
 }
 
+TEST( SparseTree, erase )
+{
+	SparseTree< std::uint8_t, float > tree;
+
+	EXPECT_TRUE( tree.insert( 0, 2.f ) );
+	EXPECT_TRUE( tree.contains( 0 ) );
+	EXPECT_TRUE( tree.erase( 0 ) );
+	EXPECT_FALSE( tree.contains( 0 ) );
+}
+
 TEST( SparseTree, parent )
 {
 	SparseTree< std::uint8_t, float > tree;

@@ -32,7 +32,9 @@ public:
 	SparseTree() = default;
 	SparseTree( std::initializer_list< std::pair< key_type, value_type > > init ) : m_map{ init.begin(), init.end() } {}
 
-	[[nodiscard]] bool empty() const { return m_map.empty(); }
+	[[nodiscard]] bool empty() const noexcept { return m_map.empty(); }
+	[[nodiscard]] size_type size() const noexcept { return m_map.size(); }
+	[[nodiscard]] bool contains( const key_type& key ) const noexcept { return m_map.contains( key ); }
 
 	bool insert( const key_type& key, const value_type& value ) { return m_map.insert( key, value ); }
 	bool insert( const key_type& key, const value_type& value, const key_type& parent )
@@ -62,6 +64,8 @@ public:
 		m_relations.insert( key, { .parent = parent } );
 		return m_map.insert( key, value );
 	}
+
+	bool erase( const key_type& key ) { return m_map.erase( key ); }
 
 	auto at( const key_type& key ) -> reference { return m_map.at( key ); }
 	auto at( const key_type& key ) const -> const_reference { return m_map.at( key ); }
