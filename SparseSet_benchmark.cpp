@@ -30,6 +30,25 @@ public:
 
 } // namespace
 
+static void BM_SparseSet_insert( benchmark::State& state )
+{
+	const auto size = state.range( 0 );
+
+	for( auto _ : state )
+	{
+		SparseSet< std::uint16_t > set;
+		for( auto i = 0u; i < size; ++i )
+		{
+			bool success = set.insert( std::rand() % size );
+			benchmark::DoNotOptimize( success );
+		}
+	}
+
+	state.SetItemsProcessed( state.iterations() * size );
+	state.SetComplexityN( size );
+}
+BENCHMARK( BM_SparseSet_insert )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
+
 BENCHMARK_DEFINE_F( BM_SparseSet, contains )( benchmark::State& state )
 {
 	const auto size = state.range( 0 );
@@ -47,24 +66,6 @@ BENCHMARK_DEFINE_F( BM_SparseSet, contains )( benchmark::State& state )
 	state.SetComplexityN( size );
 }
 BENCHMARK_REGISTER_F( BM_SparseSet, contains )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
-
-BENCHMARK_DEFINE_F( BM_SparseSet, insert )( benchmark::State& state )
-{
-	const auto size = state.range( 0 );
-
-	for( auto _ : state )
-	{
-		for( auto i = 0u; i < size; ++i )
-		{
-			bool success = set.insert( std::rand() % size );
-			benchmark::DoNotOptimize( success );
-		}
-	}
-
-	state.SetItemsProcessed( state.iterations() * size );
-	state.SetComplexityN( size );
-}
-BENCHMARK_REGISTER_F( BM_SparseSet, insert )->Range( 8, 8 << 10 )->Complexity( benchmark::o1 );
 
 BENCHMARK_DEFINE_F( BM_SparseSet, erase )( benchmark::State& state )
 {
