@@ -10,3 +10,4 @@ test('SparseMap',  executable('SparseMap_test',  'SparseMap_test.cpp',  dependen
 test('SparseTree', executable('SparseTree_test', 'SparseTree_test.cpp', dependencies: gtest))
 
 benchmark('SparseSet', executable('SparseSet_benchmark', 'SparseSet_benchmark.cpp', dependencies: gbenchmark))
+benchmark('SparseTree', executable('SparseTree_benchmark', 'SparseTree_benchmark.cpp', dependencies: gbenchmark))

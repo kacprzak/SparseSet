@@ -37,6 +37,14 @@ public:
 	[[nodiscard]] size_type size() const noexcept { return m_map.size(); }
 	[[nodiscard]] bool contains( const key_type& key ) const noexcept { return m_map.contains( key ); }
 
+	constexpr void clear() noexcept
+	{
+		m_map.clear();
+		m_relations.clear();
+	}
+
+	constexpr void reserve( size_type n ) { m_map.reserve( n ); }
+
 	bool insert( const key_type& key, const value_type& value ) { return m_map.insert( key, value ); }
 	bool insert( const key_type& key, const value_type& value, const key_type& parent )
 	{
@@ -71,6 +79,9 @@ public:
 
 	bool erase( const key_type& key )
 	{
+		if( not m_map.contains( key ) )
+			return false;
+
 		if( m_relations.contains( key ) )
 		{
 			const auto relations = m_relations.at( key );

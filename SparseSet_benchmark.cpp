@@ -8,7 +8,7 @@
 namespace
 {
 
-static auto createRandomSet( std::size_t size ) -> SparseSet< std::uint16_t >
+auto createRandomSet( std::size_t size ) -> SparseSet< std::uint16_t >
 {
 	SparseSet< std::uint16_t > set;
 	set.reserve( size );
