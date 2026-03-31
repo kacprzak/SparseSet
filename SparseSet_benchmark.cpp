@@ -37,6 +37,8 @@ static void BM_SparseSet_insert( benchmark::State& state )
 	for( auto _ : state )
 	{
 		SparseSet< std::uint16_t > set;
+		set.reserve( size );
+
 		for( auto i = 0u; i < size; ++i )
 		{
 			bool success = set.insert( std::rand() % size );
