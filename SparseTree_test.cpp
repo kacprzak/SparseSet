@@ -101,4 +101,30 @@ TEST( SparseTree, children )
 	}
 }
 
+TEST( SparseTree, for_each_bfs )
+{
+	SparseTree< std::uint8_t, float > tree;
+
+	// Root
+	EXPECT_TRUE( tree.insert( 0, 0.f ) );
+	// Children
+	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
+	EXPECT_TRUE( tree.insert( 2, 2.f, 0 ) );
+	EXPECT_TRUE( tree.insert( 3, 3.f, 0 ) );
+
+	EXPECT_TRUE( tree.insert( 6, 6.f, 2 ) );
+
+	EXPECT_TRUE( tree.insert( 4, 4.f, 1 ) );
+	EXPECT_TRUE( tree.insert( 5, 5.f, 1 ) );
+
+	{
+		const std::vector< float > expected{ 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
+
+		std::vector< float > result;
+		tree.for_each_bfs( [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+
+		EXPECT_EQ( result, expected );
+	}
+}
+
 } // namespace

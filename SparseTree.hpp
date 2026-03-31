@@ -3,6 +3,7 @@
 #include "SparseMap.hpp"
 
 #include <concepts>
+#include <queue>
 
 template< typename Key, typename T >
     requires std::unsigned_integral< Key >
@@ -153,6 +154,35 @@ public:
 	constexpr auto children_next( const iterator& it ) noexcept -> iterator
 	{
 		return m_map.find( m_relations.at( ( *it ).first ).next );
+	}
+
+	template< typename Callable >
+	void for_each_bfs( Callable&& f )
+	{
+		std::queue< key_type > queue;
+
+		// Add all root nodes
+		for( const auto [ k, _ ] : m_map )
+		{
+			if( parent( k ) == end() )
+				queue.push( k );
+		}
+
+		while( not queue.empty() )
+		{
+			const auto curr = queue.front();
+			queue.pop();
+
+			// Add children to queue
+			if( m_relations.contains( curr ) )
+			{
+				for( auto it = m_map.find( m_relations.at( curr ).children ); it != end(); it = children_next( it ) )
+					queue.push( ( *it ).first );
+			}
+
+			// Visit
+			f( *m_map.find( curr ) );
+		}
 	}
 
 private:
