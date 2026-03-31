@@ -2,6 +2,7 @@
 
 #include "SparseMap.hpp"
 
+#include <cassert>
 #include <concepts>
 #include <queue>
 
@@ -171,25 +172,25 @@ public:
 	template< typename Callable >
 	void for_each_bfs( Callable&& f )
 	{
-		std::queue< key_type > queue;
+		assert( m_queue.empty() );
 
 		// Add all root nodes
 		for( const auto& [ k, _ ] : m_map )
 		{
 			if( parent( k ) == end() )
-				queue.push( k );
+				m_queue.push( k );
 		}
 
-		while( not queue.empty() )
+		while( not m_queue.empty() )
 		{
-			const auto curr = queue.front();
-			queue.pop();
+			const auto curr = m_queue.front();
+			m_queue.pop();
 
 			// Add children to queue
 			if( m_relations.contains( curr ) )
 			{
 				for( auto it = m_map.find( m_relations.at( curr ).children ); it != end(); it = children_next( it ) )
-					queue.push( ( *it ).first );
+					m_queue.push( ( *it ).first );
 			}
 
 			// Visit
@@ -198,6 +199,7 @@ public:
 	}
 
 private:
-	SparseMap< Key, T > m_map;
-	SparseMap< Key, Relation > m_relations;
+	SparseMap< key_type, value_type > m_map;
+	SparseMap< key_type, Relation > m_relations;
+	std::queue< key_type > m_queue; //< for BFS
 };
