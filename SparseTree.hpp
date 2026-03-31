@@ -39,6 +39,9 @@ public:
 	bool insert( const key_type& key, const value_type& value ) { return m_map.insert( key, value ); }
 	bool insert( const key_type& key, const value_type& value, const key_type& parent )
 	{
+		if( m_map.contains( key ) )
+			return false;
+
 		if( not m_relations.contains( parent ) )
 			m_relations.insert( parent, {} );
 

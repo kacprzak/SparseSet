@@ -74,6 +74,8 @@ TEST( SparseTree, children )
 	EXPECT_TRUE( tree.insert( 4, 4.f, 2 ) );
 	EXPECT_TRUE( tree.insert( 5, 5.f, 2 ) );
 
+	EXPECT_FALSE( tree.insert( 5, -5.f, 2 ) );
+
 	{
 		const std::vector< float > expected{ 3.f, 2.f, 1.f };
 
