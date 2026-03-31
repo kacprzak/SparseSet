@@ -112,8 +112,8 @@ public:
 		return m_map.erase( key );
 	}
 
-	auto at( const key_type& key ) -> reference { return m_map.at( key ); }
-	auto at( const key_type& key ) const -> const_reference { return m_map.at( key ); }
+	[[nodiscard]] auto at( const key_type& key ) -> reference { return m_map.at( key ); }
+	[[nodiscard]] auto at( const key_type& key ) const -> const_reference { return m_map.at( key ); }
 
 	[[nodiscard]]
 	auto parent( const key_type& key ) -> iterator
@@ -151,6 +151,7 @@ public:
 		return m_map.find( m_relations.at( key ).children );
 	}
 
+	[[nodiscard]]
 	constexpr auto children_next( const iterator& it ) noexcept -> iterator
 	{
 		return m_map.find( m_relations.at( ( *it ).first ).next );
@@ -162,7 +163,7 @@ public:
 		std::queue< key_type > queue;
 
 		// Add all root nodes
-		for( const auto [ k, _ ] : m_map )
+		for( const auto& [ k, _ ] : m_map )
 		{
 			if( parent( k ) == end() )
 				queue.push( k );
