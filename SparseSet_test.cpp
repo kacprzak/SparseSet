@@ -9,14 +9,14 @@ namespace
 
 TEST( SparseSet, ctor )
 {
-	SparseSet< std::uint8_t > set;
+	sparse::SparseSet< std::uint8_t > set;
 
 	EXPECT_TRUE( set.empty() );
 }
 
 TEST( SparseSet, intializer_list )
 {
-	SparseSet< std::uint16_t > set{ 1, 6, 32, 5, 42, 16, 16, 16, 16, 16 };
+	sparse::SparseSet< std::uint16_t > set{ 1, 6, 32, 5, 42, 16, 16, 16, 16, 16 };
 
 	EXPECT_FALSE( set.empty() );
 	EXPECT_EQ( set.size(), 6u );
@@ -25,7 +25,7 @@ TEST( SparseSet, intializer_list )
 
 TEST( SparseSet, clear )
 {
-	SparseSet< std::uint32_t > set{ 1 };
+	sparse::SparseSet< std::uint32_t > set{ 1 };
 
 	EXPECT_FALSE( set.empty() );
 	set.clear();
@@ -34,7 +34,7 @@ TEST( SparseSet, clear )
 
 TEST( SparseSet, insert )
 {
-	SparseSet< std::uint8_t > set;
+	sparse::SparseSet< std::uint8_t > set;
 
 	EXPECT_TRUE( set.insert( 13 ) );
 	EXPECT_FALSE( set.insert( 13 ) );
@@ -46,7 +46,7 @@ TEST( SparseSet, insert )
 
 TEST( SparseSet, erase )
 {
-	SparseSet< std::uint16_t > set{ 0, 1, 2 };
+	sparse::SparseSet< std::uint16_t > set{ 0, 1, 2 };
 
 	EXPECT_TRUE( set.erase( 1 ) );
 	EXPECT_EQ( set.size(), 2u );
@@ -59,7 +59,7 @@ TEST( SparseSet, erase )
 
 TEST( SparseSet, iterator )
 {
-	SparseSet< std::uint64_t > set{ 0, 1, 2, 3 };
+	sparse::SparseSet< std::uint64_t > set{ 0, 1, 2, 3 };
 
 	int sum = 0;
 	for( auto& value : set )
@@ -70,7 +70,7 @@ TEST( SparseSet, iterator )
 
 TEST( SparseSet, const_iterator )
 {
-	const SparseSet< std::uint8_t > set{ 0, 1, 2, 3 };
+	const sparse::SparseSet< std::uint8_t > set{ 0, 1, 2, 3 };
 
 	int sum = 0;
 	for( const auto& value : set )
@@ -83,7 +83,7 @@ TEST( SparseSet, sort )
 {
 	using namespace std::ranges;
 
-	SparseSet< std::uint8_t > set{ 3, 1, 0, 2, 5 };
+	sparse::SparseSet< std::uint8_t > set{ 3, 1, 0, 2, 5 };
 
 	const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
 	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };

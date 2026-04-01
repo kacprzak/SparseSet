@@ -9,9 +9,9 @@
 namespace
 {
 
-auto createRandomSet( std::size_t size ) -> SparseTree< std::uint16_t, float >
+auto createRandomSet( std::size_t size )
 {
-	SparseTree< std::uint16_t, float > tree;
+	sparse::SparseTree< std::uint16_t, float > tree;
 	tree.reserve( size );
 
 	tree.insert( 0u, {} );
@@ -28,7 +28,7 @@ public:
 	void SetUp( const ::benchmark::State& st ) override { tree = createRandomSet( st.range( 0 ) ); }
 	void TearDown( const ::benchmark::State& ) override { tree.clear(); }
 
-	SparseTree< std::uint16_t, float > tree;
+	sparse::SparseTree< std::uint16_t, float > tree;
 };
 
 } // namespace

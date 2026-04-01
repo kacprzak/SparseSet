@@ -6,6 +6,9 @@
 #include <concepts>
 #include <queue>
 
+namespace sparse
+{
+
 template< std::unsigned_integral Key, std::swappable T >
 class SparseTree final
 {
@@ -202,3 +205,5 @@ private:
 	SparseMap< key_type, Relation > m_relations;
 	std::queue< key_type > m_queue; //< for BFS
 };
+
+} // namespace sparse

@@ -11,6 +11,9 @@
 #include <utility>
 #include <vector>
 
+namespace sparse
+{
+
 /**
  * Map of items that are stored packed in memory.
  *
@@ -293,3 +296,5 @@ private:
 	std::vector< key_type > m_sparse;                         // indirection from sparse index to dense index
 	std::vector< std::pair< key_type, value_type > > m_dense; // value and indirection from dense index to sparse index
 };
+
+} // namespace sparse
