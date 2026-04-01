@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <limits>
+#include <span>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -130,14 +131,32 @@ public:
 
 		for( std::size_t i = 0; i < m_dense.size(); ++i )
 		{
-			auto curr = i;
-			auto next = m_sparse[ m_dense[ i ] ];
+			std::size_t curr = i;
+			std::size_t next = m_sparse[ m_dense[ i ] ];
 
 			while( curr != next )
 			{
 				m_sparse[ m_dense[ curr ] ] = curr;
 				curr                        = next;
 				next                        = m_sparse[ m_dense[ curr ] ];
+			}
+		}
+	}
+
+	constexpr void reorder( std::span< const key_type > order )
+	{
+		assert( order.size() <= m_dense.size() );
+
+		for( std::size_t i = 0; i < order.size(); ++i )
+		{
+			key_type curr = m_dense[ i ];
+			key_type next = order[ i ];
+
+			while( curr != next )
+			{
+				swap( curr, next );
+				curr = next;
+				next = order[ m_sparse[ curr ] ];
 			}
 		}
 	}

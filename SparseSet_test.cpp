@@ -101,4 +101,26 @@ TEST( SparseSet, sort )
 	EXPECT_TRUE( equal( set, postsort ) );
 }
 
+TEST( SparseSet, reorder )
+{
+	using namespace std::ranges;
+
+	sparse::Set< std::uint16_t > set{ 3, 1, 10, 0, 2, 5 };
+
+	const std::vector< std::uint16_t > presort{ 3, 1, 10, 0, 2, 5 };
+	const std::vector< std::uint16_t > postsort{ 10, 0, 1, 2, 3, 5 };
+
+	EXPECT_FALSE( set.contains( 4 ) );
+	EXPECT_TRUE( equal( set, presort ) );
+
+	set.reorder( postsort );
+
+	EXPECT_FALSE( set.contains( 4 ) );
+	EXPECT_TRUE( equal( set, postsort ) );
+
+	// Checks if sparse vector is updated.
+	set.insert( 3 );
+	EXPECT_TRUE( equal( set, postsort ) );
+}
+
 } // namespace

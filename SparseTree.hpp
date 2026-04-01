@@ -199,6 +199,16 @@ public:
 		}
 	}
 
+	void sort_bfs()
+	{
+		std::vector< key_type > order;
+		order.reserve( m_map.size() );
+
+		for_each_bfs( [ & ]( const auto& kv ) { order.emplace_back( kv.first ); } );
+
+		m_map.reorder( order );
+	}
+
 private:
 	Map< key_type, value_type > m_map;
 	Map< key_type, Relation > m_relations;
