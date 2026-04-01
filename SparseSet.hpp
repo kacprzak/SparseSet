@@ -64,8 +64,8 @@ private:
 public:
 	Set() = default;
 
-	template< typename InputIt >
-	Set( InputIt first, InputIt last )
+	template< std::input_iterator IterT >
+	Set( IterT first, IterT last )
 	{
 		reserve( std::distance( first, last ) );
 

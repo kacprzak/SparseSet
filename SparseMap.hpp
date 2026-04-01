@@ -65,8 +65,8 @@ private:
 public:
 	Map() = default;
 
-	template< typename InputIt >
-	Map( InputIt first, InputIt last )
+	template< std::input_iterator IterT >
+	Map( IterT first, IterT last )
 	{
 		reserve( std::distance( first, last ) );
 
