@@ -28,8 +28,7 @@ private:
 	{
 		key_type children = s_invalid; //< first child
 		key_type next     = s_invalid; //< next sibling
-		// key_type prev     = s_tombstone; //< previous sibling
-		key_type parent = s_invalid; //< parent
+		key_type parent   = s_invalid; //< parent
 	};
 
 public:
