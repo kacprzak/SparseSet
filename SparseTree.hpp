@@ -201,12 +201,17 @@ public:
 
 	void sort_bfs()
 	{
-		std::vector< key_type > order;
-		order.reserve( m_map.size() );
+		std::vector< size_type > permutation;
+		permutation.reserve( m_map.size() );
 
-		for_each_bfs( [ & ]( const auto& kv ) { order.emplace_back( kv.first ); } );
+		for_each_bfs(
+		    [ & ]( const auto& kv )
+		    {
+			    const auto it = m_map.find( kv.first );
+			    permutation.emplace_back( std::distance( m_map.begin(), it ) );
+		    } );
 
-		m_map.reorder( order );
+		m_map.reorder( permutation );
 	}
 
 private:

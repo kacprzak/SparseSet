@@ -41,10 +41,16 @@ private:
 	// Marks unused keys.
 	static constexpr auto s_invalid = std::numeric_limits< key_type >::max();
 
-	void swap( const key_type first, const key_type second )
+	void swap_by_key( const key_type first, const key_type second )
 	{
 		std::swap( m_dense[ m_sparse[ first ] ], m_dense[ m_sparse[ second ] ] );
 		std::swap( m_sparse[ first ], m_sparse[ second ] );
+	}
+
+	void swap( const size_type first, const size_type second )
+	{
+		std::swap( m_sparse[ m_dense[ first ].first ], m_sparse[ m_dense[ second ].first ] );
+		std::swap( m_dense[ first ], m_dense[ second ] );
 	}
 
 	void do_insert( const key_type& key, const value_type& value )
@@ -144,7 +150,7 @@ public:
 			return false;
 
 		// Swap and pop
-		swap( key, m_dense.back().first );
+		swap_by_key( key, m_dense.back().first );
 
 		m_dense.pop_back();
 		m_sparse[ key ] = s_invalid;
@@ -173,20 +179,21 @@ public:
 		}
 	}
 
-	constexpr void reorder( std::span< const key_type > order )
+	constexpr void reorder( std::span< size_type > permutation )
 	{
-		assert( order.size() <= m_dense.size() );
+		assert( permutation.size() == m_dense.size() );
 
-		for( std::size_t i = 0; i < order.size(); ++i )
+		for( std::size_t i = 0; i < permutation.size(); ++i )
 		{
-			key_type curr = m_dense[ i ].first;
-			key_type next = order[ i ];
+			std::size_t curr = i;
+			std::size_t next = permutation[ i ];
 
 			while( curr != next )
 			{
-				swap( curr, next );
-				curr = next;
-				next = order[ m_sparse[ curr ] ];
+				swap( permutation[ curr ], permutation[ next ] );
+				permutation[ curr ] = curr;
+				curr                = next;
+				next                = permutation[ curr ];
 			}
 		}
 	}
