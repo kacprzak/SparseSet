@@ -4,7 +4,7 @@ SparseSet, SparseMap and SparseTree implementation in C++20. Header only. No dep
 
 ## Tests
 
-```
+```sh
 apt install meson libgtest-dev libbenchmark-dev
 meson setup build
 meson test -C build
