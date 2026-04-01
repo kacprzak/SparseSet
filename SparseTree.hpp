@@ -22,14 +22,14 @@ public:
 	using const_iterator  = Map< Key, T >::const_iterator;
 
 private:
-	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
+	static constexpr auto s_invalid = std::numeric_limits< key_type >::max();
 
 	struct Relation
 	{
-		key_type children = s_tombstone; //< first child
-		key_type next     = s_tombstone; //< next sibling
+		key_type children = s_invalid; //< first child
+		key_type next     = s_invalid; //< next sibling
 		// key_type prev     = s_tombstone; //< previous sibling
-		key_type parent = s_tombstone; //< parent
+		key_type parent = s_invalid; //< parent
 	};
 
 public:
@@ -60,7 +60,7 @@ public:
 		// Parent relations needs to be updated
 		auto& parent_relations = m_relations.at( parent );
 
-		if( parent_relations.children == s_tombstone )
+		if( parent_relations.children == s_invalid )
 		{
 			// Parent has no children. Set this one as first.
 			parent_relations.children = key;
@@ -71,7 +71,7 @@ public:
 			for( auto it = m_map.find( parent_relations.children ); it != end(); it = children_next( it ) )
 			{
 				auto& child_relations = m_relations.at( it->first );
-				if( child_relations.next == s_tombstone )
+				if( child_relations.next == s_invalid )
 					child_relations.next = key;
 			}
 		}
@@ -90,7 +90,7 @@ public:
 			const auto relations = m_relations.at( key );
 			// Erase children
 			auto child = relations.children;
-			while( child != s_tombstone )
+			while( child != s_invalid )
 			{
 				const auto next = m_relations.at( child ).next;
 				erase( child );
@@ -98,7 +98,7 @@ public:
 			}
 
 			// Detach from parent
-			if( relations.parent != s_tombstone )
+			if( relations.parent != s_invalid )
 			{
 				auto& parent_relations = m_relations.at( relations.parent );
 				if( parent_relations.children == key )

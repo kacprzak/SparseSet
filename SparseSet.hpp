@@ -37,7 +37,7 @@ public:
 
 private:
 	// Marks unused keys.
-	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
+	static constexpr auto s_invalid = std::numeric_limits< key_type >::max();
 
 	void swap( const key_type first, const key_type second )
 	{
@@ -48,7 +48,7 @@ private:
 	void do_insert( const key_type& key )
 	{
 		if( key >= m_sparse.size() )
-			m_sparse.resize( key + 1u, s_tombstone );
+			m_sparse.resize( key + 1u, s_invalid );
 
 		m_sparse[ key ] = m_dense.size();
 		m_dense.emplace_back( key );
@@ -74,7 +74,7 @@ public:
 	[[nodiscard]]
 	constexpr bool contains( const key_type& key ) const noexcept
 	{
-		return key < m_sparse.size() and m_sparse[ key ] != s_tombstone;
+		return key < m_sparse.size() and m_sparse[ key ] != s_invalid;
 	}
 
 	constexpr void clear() noexcept
@@ -94,7 +94,7 @@ public:
 	 */
 	bool insert( const key_type& key )
 	{
-		if( key == s_tombstone )
+		if( key == s_invalid )
 			throw std::logic_error{ "Invalid key value." };
 
 		if( contains( key ) )
@@ -116,7 +116,7 @@ public:
 		swap( key, m_dense.back() );
 
 		m_dense.pop_back();
-		m_sparse[ key ] = s_tombstone;
+		m_sparse[ key ] = s_invalid;
 
 		return true;
 	}
@@ -127,7 +127,7 @@ public:
 	constexpr void sort()
 	{
 		std::sort( m_dense.begin(), m_dense.end() );
-		std::fill( m_sparse.begin(), m_sparse.end(), s_tombstone );
+		std::fill( m_sparse.begin(), m_sparse.end(), s_invalid );
 
 		for( auto it = m_dense.begin(); it != m_dense.end(); ++it )
 			m_sparse[ *it ] = std::distance( m_dense.begin(), it );
