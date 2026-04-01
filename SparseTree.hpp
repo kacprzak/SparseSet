@@ -10,7 +10,7 @@ namespace sparse
 {
 
 template< std::unsigned_integral Key, std::swappable T >
-class SparseTree final
+class Tree final
 {
 public:
 	using key_type        = Key;
@@ -18,8 +18,8 @@ public:
 	using size_type       = std::size_t;
 	using reference       = value_type&;
 	using const_reference = const value_type&;
-	using iterator        = SparseMap< Key, T >::iterator;
-	using const_iterator  = SparseMap< Key, T >::const_iterator;
+	using iterator        = Map< Key, T >::iterator;
+	using const_iterator  = Map< Key, T >::const_iterator;
 
 private:
 	static constexpr auto s_tombstone = std::numeric_limits< key_type >::max();
@@ -33,8 +33,8 @@ private:
 	};
 
 public:
-	SparseTree() = default;
-	SparseTree( std::initializer_list< std::pair< key_type, value_type > > init ) : m_map{ init.begin(), init.end() } {}
+	Tree() = default;
+	Tree( std::initializer_list< std::pair< key_type, value_type > > init ) : m_map{ init.begin(), init.end() } {}
 
 	[[nodiscard]] bool empty() const noexcept { return m_map.empty(); }
 	[[nodiscard]] size_type size() const noexcept { return m_map.size(); }
@@ -201,8 +201,8 @@ public:
 	}
 
 private:
-	SparseMap< key_type, value_type > m_map;
-	SparseMap< key_type, Relation > m_relations;
+	Map< key_type, value_type > m_map;
+	Map< key_type, Relation > m_relations;
 	std::queue< key_type > m_queue; //< for BFS
 };
 

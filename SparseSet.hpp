@@ -26,7 +26,7 @@ namespace sparse
  * not used. This is why it is recommended to use smallest type possible, for example std::uint16_t.
  */
 template< std::unsigned_integral Key >
-class SparseSet final
+class Set final
 {
 public:
 	using key_type        = Key;
@@ -55,10 +55,10 @@ private:
 	}
 
 public:
-	SparseSet() = default;
+	Set() = default;
 
 	template< typename InputIt >
-	SparseSet( InputIt first, InputIt last )
+	Set( InputIt first, InputIt last )
 	{
 		reserve( std::distance( first, last ) );
 
@@ -66,7 +66,7 @@ public:
 			insert( *first );
 	}
 
-	SparseSet( std::initializer_list< key_type > init ) : SparseSet{ init.begin(), init.end() } {}
+	Set( std::initializer_list< key_type > init ) : Set{ init.begin(), init.end() } {}
 
 	[[nodiscard]] constexpr bool empty() const noexcept { return m_dense.empty(); }
 	[[nodiscard]] constexpr size_type size() const noexcept { return m_dense.size(); }

@@ -10,7 +10,7 @@ namespace
 
 TEST( SparseTree, ctor )
 {
-	sparse::SparseTree< std::uint8_t, float > tree;
+	sparse::Tree< std::uint8_t, float > tree;
 
 	EXPECT_TRUE( tree.empty() );
 }
@@ -19,7 +19,7 @@ TEST( SparseTree, iterator )
 {
 	using namespace std::ranges;
 
-	sparse::SparseTree< std::uint16_t, float > tree{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	sparse::Tree< std::uint16_t, float > tree{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	for( const auto& [ k, v ] : tree )
 		v = -v;
@@ -31,7 +31,7 @@ TEST( SparseTree, iterator )
 
 TEST( SparseTree, insert )
 {
-	sparse::SparseTree< std::uint8_t, float > tree;
+	sparse::Tree< std::uint8_t, float > tree;
 
 	EXPECT_TRUE( tree.insert( 0, 2.f ) );
 	EXPECT_FALSE( tree.empty() );
@@ -40,7 +40,7 @@ TEST( SparseTree, insert )
 
 TEST( SparseTree, erase )
 {
-	sparse::SparseTree< std::uint8_t, float > tree;
+	sparse::Tree< std::uint8_t, float > tree;
 
 	EXPECT_TRUE( tree.insert( 0, 2.f ) );
 	EXPECT_TRUE( tree.contains( 0 ) );
@@ -50,7 +50,7 @@ TEST( SparseTree, erase )
 
 TEST( SparseTree, parent )
 {
-	sparse::SparseTree< std::uint8_t, float > tree;
+	sparse::Tree< std::uint8_t, float > tree;
 
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
 	EXPECT_EQ( tree.parent( 0 ), tree.end() );
@@ -62,7 +62,7 @@ TEST( SparseTree, parent )
 
 TEST( SparseTree, children )
 {
-	sparse::SparseTree< std::uint8_t, float > tree;
+	sparse::Tree< std::uint8_t, float > tree;
 
 	// Root
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
@@ -103,7 +103,7 @@ TEST( SparseTree, children )
 
 TEST( SparseTree, for_each_bfs )
 {
-	sparse::SparseTree< std::uint8_t, float > tree;
+	sparse::Tree< std::uint8_t, float > tree;
 
 	// Root
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );

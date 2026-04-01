@@ -27,7 +27,7 @@ namespace sparse
  * @tparam T value type
  */
 template< std::unsigned_integral Key, std::swappable T >
-class SparseMap final
+class Map final
 {
 public:
 	using key_type        = Key;
@@ -56,10 +56,10 @@ private:
 	}
 
 public:
-	SparseMap() = default;
+	Map() = default;
 
 	template< typename InputIt >
-	SparseMap( InputIt first, InputIt last )
+	Map( InputIt first, InputIt last )
 	{
 		reserve( std::distance( first, last ) );
 
@@ -67,9 +67,7 @@ public:
 			insert( first->first, first->second );
 	}
 
-	SparseMap( std::initializer_list< std::pair< key_type, value_type > > init ) : SparseMap{ init.begin(), init.end() }
-	{
-	}
+	Map( std::initializer_list< std::pair< key_type, value_type > > init ) : Map{ init.begin(), init.end() } {}
 
 	[[nodiscard]] constexpr bool empty() const noexcept { return m_dense.empty(); }
 	[[nodiscard]] constexpr size_type size() const noexcept { return m_dense.size(); }

@@ -10,7 +10,7 @@ namespace
 
 auto createRandomSet( std::size_t size )
 {
-	sparse::SparseSet< std::uint16_t > set;
+	sparse::Set< std::uint16_t > set;
 	set.reserve( size );
 
 	for( auto i = 0u; i < size; ++i )
@@ -25,7 +25,7 @@ public:
 	void SetUp( const ::benchmark::State& st ) override { set = createRandomSet( st.range( 0 ) ); }
 	void TearDown( const ::benchmark::State& ) override { set.clear(); }
 
-	sparse::SparseSet< std::uint16_t > set;
+	sparse::Set< std::uint16_t > set;
 };
 
 } // namespace
@@ -36,7 +36,7 @@ static void BM_SparseSet_insert( benchmark::State& state )
 
 	for( auto _ : state )
 	{
-		sparse::SparseSet< std::uint16_t > set;
+		sparse::Set< std::uint16_t > set;
 		set.reserve( size );
 
 		for( auto i = 0u; i < size; ++i )

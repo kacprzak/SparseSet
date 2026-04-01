@@ -12,14 +12,14 @@ namespace
 
 TEST( SparseMap, ctor )
 {
-	sparse::SparseMap< std::uint8_t, float > map;
+	sparse::Map< std::uint8_t, float > map;
 
 	EXPECT_TRUE( map.empty() );
 }
 
 TEST( SparseMap, intializer_list )
 {
-	sparse::SparseMap< std::uint16_t, float > map{ { 1, 1.f }, { 42, 42.f }, { 16, 16.f }, { 16, 1234.f } };
+	sparse::Map< std::uint16_t, float > map{ { 1, 1.f }, { 42, 42.f }, { 16, 16.f }, { 16, 1234.f } };
 
 	EXPECT_FALSE( map.empty() );
 	EXPECT_EQ( map.size(), 3u );
@@ -28,7 +28,7 @@ TEST( SparseMap, intializer_list )
 
 TEST( SparseMap, clear )
 {
-	sparse::SparseMap< std::uint32_t, float > map{ { 1, {} } };
+	sparse::Map< std::uint32_t, float > map{ { 1, {} } };
 
 	EXPECT_FALSE( map.empty() );
 	map.clear();
@@ -37,7 +37,7 @@ TEST( SparseMap, clear )
 
 TEST( SparseMap, insert )
 {
-	sparse::SparseMap< std::uint8_t, float > map;
+	sparse::Map< std::uint8_t, float > map;
 
 	EXPECT_TRUE( map.insert( 13, 7.f ) );
 	EXPECT_FALSE( map.insert( 13, 13.f ) );
@@ -49,7 +49,7 @@ TEST( SparseMap, insert )
 
 TEST( SparseMap, erase )
 {
-	sparse::SparseMap< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	sparse::Map< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	EXPECT_TRUE( map.erase( 1 ) );
 	EXPECT_EQ( map.size(), 2u );
@@ -64,7 +64,7 @@ TEST( SparseMap, iterator )
 {
 	using namespace std::ranges;
 
-	sparse::SparseMap< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	sparse::Map< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	for( const auto& [ k, v ] : map )
 		v = -v;
@@ -76,7 +76,7 @@ TEST( SparseMap, iterator )
 
 TEST( SparseMap, const_iterator )
 {
-	const sparse::SparseMap< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+	const sparse::Map< std::uint16_t, float > map{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
 
 	int sum = 0;
 	for( const auto& [ k, v ] : map )
@@ -89,7 +89,7 @@ TEST( SparseMap, sort )
 {
 	using namespace std::ranges;
 
-	sparse::SparseMap< std::uint8_t, float > map{ { 3, {} }, { 1, {} }, { 0, {} }, { 2, {} }, { 5, {} } };
+	sparse::Map< std::uint8_t, float > map{ { 3, {} }, { 1, {} }, { 0, {} }, { 2, {} }, { 5, {} } };
 
 	const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
 	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
@@ -109,7 +109,7 @@ TEST( SparseMap, sort )
 
 TEST( SparseMap, at )
 {
-	sparse::SparseMap< std::uint8_t, float > map;
+	sparse::Map< std::uint8_t, float > map;
 
 	map.insert( 42, 13.f );
 	map.at( 42 ) = 21.f;
@@ -118,7 +118,7 @@ TEST( SparseMap, at )
 
 TEST( SparseMap, find_slot )
 {
-	sparse::SparseMap< std::uint8_t, float > map;
+	sparse::Map< std::uint8_t, float > map;
 
 	for( int i = 0; i < std::numeric_limits< std::uint8_t >::max(); ++i )
 		map.insert( i, i );
