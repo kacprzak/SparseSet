@@ -174,6 +174,13 @@ public:
 		return m_dense.at( m_sparse.at( key ) ).second;
 	}
 
+	template< class Reference >
+	struct ArrowProxy
+	{
+		Reference r;
+		Reference* operator->() { return &r; }
+	};
+
 	template< typename IterT, typename ValueT, typename ReferenceT >
 	class IteratorProxy
 	{
@@ -183,6 +190,7 @@ public:
 		using difference_type   = std::ptrdiff_t;
 		using value_type        = ValueT;
 		using reference         = ReferenceT;
+		using pointer           = ArrowProxy< reference >;
 
 		IteratorProxy() : m_iterator{} {}
 		IteratorProxy( IterT it ) : m_iterator{ it } {}
@@ -192,6 +200,7 @@ public:
 		auto operator<=>( const IteratorProxy& other ) const = default;
 
 		auto operator*() const -> reference { return { m_iterator->first, m_iterator->second }; }
+		auto operator->() const -> pointer { return { { m_iterator->first, m_iterator->second } }; }
 		auto operator[]( const difference_type n ) const -> reference { *m_iterator[ n ]; }
 
 		IteratorProxy& operator++() { return ++m_iterator, *this; }

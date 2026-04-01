@@ -67,7 +67,7 @@ public:
 			// Parent has children. Set this as the last one.
 			for( auto it = m_map.find( parent_relations.children ); it != end(); it = children_next( it ) )
 			{
-				auto& child_relations = m_relations.at( ( *it ).first );
+				auto& child_relations = m_relations.at( it->first );
 				if( child_relations.next == s_tombstone )
 					child_relations.next = key;
 			}
@@ -108,7 +108,7 @@ public:
 					// Scan parent children until previous found.
 					for( auto it = m_map.find( parent_relations.children ); it != end(); it = children_next( it ) )
 					{
-						auto& child_relations = m_relations.at( ( *it ).first );
+						auto& child_relations = m_relations.at( it->first );
 						if( child_relations.next == key )
 						{
 							child_relations.next = relations.next;
@@ -165,7 +165,7 @@ public:
 	[[nodiscard]]
 	constexpr auto children_next( const iterator& it ) noexcept -> iterator
 	{
-		return m_map.find( m_relations.at( ( *it ).first ).next );
+		return m_map.find( m_relations.at( it->first ).next );
 	}
 
 	template< typename Callable >
@@ -189,7 +189,7 @@ public:
 			if( m_relations.contains( curr ) )
 			{
 				for( auto it = m_map.find( m_relations.at( curr ).children ); it != end(); it = children_next( it ) )
-					m_queue.push( ( *it ).first );
+					m_queue.push( it->first );
 			}
 
 			// Visit

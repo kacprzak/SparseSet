@@ -81,7 +81,7 @@ TEST( SparseTree, children )
 
 		std::vector< float > result;
 		for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
-			result.push_back( ( *it ).second );
+			result.push_back( it->second );
 
 		EXPECT_EQ( result, expected );
 	}
@@ -95,7 +95,7 @@ TEST( SparseTree, children )
 
 		std::vector< float > result;
 		for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
-			result.push_back( ( *it ).second );
+			result.push_back( it->second );
 
 		EXPECT_EQ( result, expected );
 	}
