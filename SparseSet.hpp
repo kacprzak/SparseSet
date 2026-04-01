@@ -22,8 +22,7 @@
  * @tparam Key key type. Using large values for keys will require to allocate memory for all smaller key values even if
  * not used. This is why it is recommended to use smallest type possible, for example std::uint16_t.
  */
-template< typename Key >
-    requires std::unsigned_integral< Key >
+template< std::unsigned_integral Key >
 class SparseSet final
 {
 public:

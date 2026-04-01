@@ -6,8 +6,7 @@
 #include <concepts>
 #include <queue>
 
-template< typename Key, typename T >
-    requires std::unsigned_integral< Key >
+template< std::unsigned_integral Key, std::swappable T >
 class SparseTree final
 {
 public:
@@ -170,7 +169,7 @@ public:
 	}
 
 	template< typename Callable >
-	void for_each_bfs( Callable&& f )
+	void for_each_bfs( Callable f )
 	{
 		assert( m_queue.empty() );
 

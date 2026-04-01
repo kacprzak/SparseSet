@@ -23,8 +23,7 @@
  * not used. This is why it is recommended to use smallest type possible, for example std::uint16_t.
  * @tparam T value type
  */
-template< typename Key, typename T >
-    requires std::unsigned_integral< Key > && std::swappable< T >
+template< std::unsigned_integral Key, std::swappable T >
 class SparseMap final
 {
 public:
