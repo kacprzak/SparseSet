@@ -157,10 +157,19 @@ public:
 	void sort()
 	{
 		std::sort( m_dense.begin(), m_dense.end(), []( const auto& a, const auto& b ) { return a.first < b.first; } );
-		std::fill( m_sparse.begin(), m_sparse.end(), s_invalid );
 
-		for( auto it = m_dense.begin(); it != m_dense.end(); ++it )
-			m_sparse[ it->first ] = std::distance( m_dense.begin(), it );
+		for( std::size_t i = 0; i < m_dense.size(); ++i )
+		{
+			auto curr = i;
+			auto next = m_sparse[ m_dense[ i ].first ];
+
+			while( curr != next )
+			{
+				m_sparse[ m_dense[ curr ].first ] = curr;
+				curr                              = next;
+				next                              = m_sparse[ m_dense[ curr ].first ];
+			}
+		}
 	}
 
 	[[nodiscard]]

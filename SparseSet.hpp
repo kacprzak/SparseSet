@@ -127,10 +127,19 @@ public:
 	constexpr void sort()
 	{
 		std::sort( m_dense.begin(), m_dense.end() );
-		std::fill( m_sparse.begin(), m_sparse.end(), s_invalid );
 
-		for( auto it = m_dense.begin(); it != m_dense.end(); ++it )
-			m_sparse[ *it ] = std::distance( m_dense.begin(), it );
+		for( std::size_t i = 0; i < m_dense.size(); ++i )
+		{
+			auto curr = i;
+			auto next = m_sparse[ m_dense[ i ] ];
+
+			while( curr != next )
+			{
+				m_sparse[ m_dense[ curr ] ] = curr;
+				curr                        = next;
+				next                        = m_sparse[ m_dense[ curr ] ];
+			}
+		}
 	}
 
 	[[nodiscard]] constexpr auto begin() const noexcept { return m_dense.begin(); }
