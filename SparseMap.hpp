@@ -237,51 +237,44 @@ public:
 
 		auto operator*() const -> reference { return { m_iterator->first, m_iterator->second }; }
 		auto operator->() const -> pointer { return { { m_iterator->first, m_iterator->second } }; }
-		auto operator[]( const difference_type n ) const -> reference { *m_iterator[ n ]; }
+		auto operator[]( const difference_type n ) const -> reference
+		{
+			return { m_iterator[ n ].first, m_iterator[ n ].second };
+		}
 
-		IteratorProxy& operator++() { return ++m_iterator, *this; }
-		IteratorProxy operator++( int )
+		auto operator++() -> IteratorProxy& { return ++m_iterator, *this; }
+		auto operator++( int ) -> IteratorProxy
 		{
 			auto copy = *this;
 			++m_iterator;
 			return copy;
 		}
 
-		IteratorProxy& operator--() { return --m_iterator, *this; }
-		IteratorProxy operator--( int )
+		auto operator--() -> IteratorProxy& { return --m_iterator, *this; }
+		auto operator--( int ) -> IteratorProxy
 		{
 			auto copy = *this;
 			--m_iterator;
 			return copy;
 		}
 
-		IteratorProxy& operator+=( const difference_type n )
+		auto operator+=( const difference_type n ) -> IteratorProxy&
 		{
 			m_iterator += n;
 			return *this;
 		}
+		auto operator+( const difference_type n ) const -> IteratorProxy { return m_iterator + n; }
 
-		IteratorProxy operator+( const difference_type n ) const
-		{
-			auto copy = *this;
-			return copy + n;
-		}
-
-		IteratorProxy& operator-=( const difference_type n )
+		auto operator-=( const difference_type n ) -> IteratorProxy&
 		{
 			m_iterator -= n;
 			return *this;
 		}
+		auto operator-( const difference_type n ) const -> IteratorProxy { return m_iterator - n; }
 
-		IteratorProxy operator-( const difference_type n ) const
-		{
-			auto copy = *this;
-			return copy - n;
-		}
+		auto operator-( const IteratorProxy& other ) const -> difference_type { return m_iterator - other.m_iterator; }
 
-		difference_type operator-( const IteratorProxy& other ) const { return m_iterator - other.m_iterator; }
-
-		friend IteratorProxy operator+( difference_type n, IteratorProxy rhs ) { return rhs + n; }
+		friend auto operator+( difference_type n, IteratorProxy rhs ) -> IteratorProxy { return rhs + n; }
 
 	private:
 		IterT m_iterator;
