@@ -161,7 +161,7 @@ public:
 	/**
 	 * Sorts items in memory in key order.
 	 */
-	void sort()
+	constexpr void sort()
 	{
 		std::sort( m_dense.begin(), m_dense.end(), []( const auto& a, const auto& b ) { return a.first < b.first; } );
 
