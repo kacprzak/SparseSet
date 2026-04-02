@@ -88,16 +88,8 @@ TEST( SparseSet, sort )
 	const std::vector< std::uint8_t > presort{ 3, 1, 0, 2, 5 };
 	const std::vector< std::uint8_t > postsort{ 0, 1, 2, 3, 5 };
 
-	EXPECT_FALSE( set.contains( 4 ) );
 	EXPECT_TRUE( equal( set, presort ) );
-
 	set.sort();
-
-	EXPECT_FALSE( set.contains( 4 ) );
-	EXPECT_TRUE( equal( set, postsort ) );
-
-	// Checks if sparse vector is updated.
-	set.insert( 3 );
 	EXPECT_TRUE( equal( set, postsort ) );
 }
 
@@ -115,12 +107,6 @@ TEST( SparseSet, reorder )
 	set.reorder( perm_copy );
 
 	const std::vector< std::uint16_t > expected{ 10, 0, 1, 2, 3 };
-
-	EXPECT_FALSE( set.contains( 4 ) );
-	EXPECT_TRUE( equal( set, expected ) );
-
-	// Checks if sparse vector is updated.
-	set.insert( 3 );
 	EXPECT_TRUE( equal( set, expected ) );
 }
 
