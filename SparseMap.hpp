@@ -19,7 +19,7 @@ namespace sparse
  * Map of items that are stored packed in memory.
  *
  * This class allows for fast iteration on all stored items like when using std::vector, but this collection provides
- * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achived at expense of memory.
+ * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achieved at expense of memory.
  *
  * Items are not stored in keys order, unless `sort` is called. Any modification may reorder items.
  *
@@ -228,56 +228,58 @@ public:
 		using reference         = ReferenceT;
 		using pointer           = ArrowProxy< reference >;
 
-		IteratorProxy() : m_iterator{} {}
-		IteratorProxy( IterT it ) : m_iterator{ it } {}
-		IteratorProxy( const IteratorProxy& )            = default;
-		IteratorProxy& operator=( const IteratorProxy& ) = default;
+		constexpr IteratorProxy() noexcept : m_current{} {}
+		explicit constexpr IteratorProxy( IterT it ) noexcept : m_current{ it } {}
+		constexpr IteratorProxy( const IteratorProxy& ) noexcept            = default;
+		constexpr IteratorProxy& operator=( const IteratorProxy& ) noexcept = default;
 
-		auto operator<=>( const IteratorProxy& other ) const = default;
+		constexpr auto operator<=>( const IteratorProxy& other ) const = default;
 
-		auto operator*() const -> reference { return { m_iterator->first, m_iterator->second }; }
-		auto operator->() const -> pointer { return { { m_iterator->first, m_iterator->second } }; }
-		auto operator[]( const difference_type n ) const -> reference
+		constexpr auto operator*() const -> reference { return { m_current->first, m_current->second }; }
+		constexpr auto operator->() const -> pointer { return { { m_current->first, m_current->second } }; }
+
+		constexpr auto operator[]( const difference_type n ) const -> reference
 		{
-			return { m_iterator[ n ].first, m_iterator[ n ].second };
+			return { m_current[ n ].first, m_current[ n ].second };
 		}
 
-		auto operator++() -> IteratorProxy& { return ++m_iterator, *this; }
-		auto operator++( int ) -> IteratorProxy
-		{
-			auto copy = *this;
-			++m_iterator;
-			return copy;
-		}
-
-		auto operator--() -> IteratorProxy& { return --m_iterator, *this; }
-		auto operator--( int ) -> IteratorProxy
+		constexpr auto operator++() -> IteratorProxy& { return ++m_current, *this; }
+		constexpr auto operator++( int ) -> IteratorProxy
 		{
 			auto copy = *this;
-			--m_iterator;
+			++m_current;
 			return copy;
 		}
-
-		auto operator+=( const difference_type n ) -> IteratorProxy&
+		constexpr auto operator+=( const difference_type n ) -> IteratorProxy&
 		{
-			m_iterator += n;
+			m_current += n;
 			return *this;
 		}
-		auto operator+( const difference_type n ) const -> IteratorProxy { return m_iterator + n; }
+		constexpr auto operator+( const difference_type n ) const -> IteratorProxy { return m_current + n; }
 
-		auto operator-=( const difference_type n ) -> IteratorProxy&
+		constexpr auto operator--() -> IteratorProxy& { return --m_current, *this; }
+		constexpr auto operator--( int ) -> IteratorProxy
 		{
-			m_iterator -= n;
+			auto copy = *this;
+			--m_current;
+			return copy;
+		}
+		constexpr auto operator-=( const difference_type n ) -> IteratorProxy&
+		{
+			m_current -= n;
 			return *this;
 		}
-		auto operator-( const difference_type n ) const -> IteratorProxy { return m_iterator - n; }
+		constexpr auto operator-( const difference_type n ) const -> IteratorProxy { return m_current - n; }
 
-		auto operator-( const IteratorProxy& other ) const -> difference_type { return m_iterator - other.m_iterator; }
+		constexpr auto operator-( const IteratorProxy& other ) const -> difference_type
+		{
+			return m_current - other.m_current;
+		}
 
-		friend auto operator+( difference_type n, IteratorProxy rhs ) -> IteratorProxy { return rhs + n; }
+		friend constexpr auto operator+( difference_type n, IteratorProxy rhs ) -> IteratorProxy { return rhs + n; }
 
 	private:
-		IterT m_iterator;
+		IterT m_current; //< The underlying iterator
 	};
 
 	using iterator       = IteratorProxy< typename std::vector< std::pair< Key, T > >::iterator,

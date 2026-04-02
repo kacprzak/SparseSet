@@ -45,7 +45,11 @@ public:
 		m_relations.clear();
 	}
 
-	constexpr void reserve( size_type n ) { m_map.reserve( n ); }
+	constexpr void reserve( size_type n )
+	{
+		m_map.reserve( n );
+		m_relations.reserve( n );
+	}
 
 	bool insert( const key_type& key, const value_type& value ) { return m_map.insert( key, value ); }
 	bool insert( const key_type& key, const value_type& value, const key_type& parent )

@@ -19,7 +19,7 @@ namespace sparse
  * Set of keys that are stored packed in memory.
  *
  * This class allows for fast iteration on all stored keys like when using std::vector, but this collection provides
- * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achived at expense of memory.
+ * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achieved at expense of memory.
  *
  * Keys are not stored in order, unless `sort` is called. Any modification may reorder items.
  *
