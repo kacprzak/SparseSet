@@ -172,8 +172,8 @@ public:
 	[[nodiscard]] constexpr auto end() const noexcept { return m_dense.end(); }
 
 private:
-	std::vector< key_type > m_sparse; // indirection from sparse index to dense index
-	std::vector< key_type > m_dense;  // indirection from dense index to sparse index
+	std::vector< key_type > m_sparse; // maps key -> dense index
+	std::vector< key_type > m_dense;  // dense array of keys
 };
 
 } // namespace sparse
