@@ -60,26 +60,15 @@ public:
 		if( not m_relations.contains( parent ) )
 			m_relations.insert( parent, {} );
 
-		// Parent relations needs to be updated
+		Relation relation{ .parent = parent };
+
+		// Parent relation needs to be updated
 		auto& parent_relations = m_relations.at( parent );
 
-		if( parent_relations.children == s_invalid )
-		{
-			// Parent has no children. Set this one as first.
-			parent_relations.children = key;
-		}
-		else
-		{
-			// Parent has children. Set this as the last one.
-			for( auto it = m_map.find( parent_relations.children ); it != end(); it = children_next( it ) )
-			{
-				auto& child_relations = m_relations.at( it->first );
-				if( child_relations.next == s_invalid )
-					child_relations.next = key;
-			}
-		}
+		relation.next             = parent_relations.children;
+		parent_relations.children = key;
 
-		m_relations.insert( key, { .parent = parent } );
+		m_relations.insert( key, relation );
 		return m_map.insert( key, value );
 	}
 

@@ -109,13 +109,13 @@ TEST( SparseTree, for_each_bfs )
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
 	// Children
 	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
-	EXPECT_TRUE( tree.insert( 2, 2.f, 0 ) );
-	EXPECT_TRUE( tree.insert( 3, 3.f, 0 ) );
+	EXPECT_TRUE( tree.insert_after( 2, 2.f, 1 ) );
+	EXPECT_TRUE( tree.insert_after( 3, 3.f, 2 ) );
 
 	EXPECT_TRUE( tree.insert( 6, 6.f, 2 ) );
 
 	EXPECT_TRUE( tree.insert( 4, 4.f, 1 ) );
-	EXPECT_TRUE( tree.insert( 5, 5.f, 1 ) );
+	EXPECT_TRUE( tree.insert_after( 5, 5.f, 4 ) );
 	// Extra root
 	EXPECT_TRUE( tree.insert( 7, 7.f ) );
 
@@ -139,13 +139,13 @@ TEST( SparseTree, sort_bfs )
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
 	// Children
 	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
-	EXPECT_TRUE( tree.insert( 2, 2.f, 0 ) );
-	EXPECT_TRUE( tree.insert( 3, 3.f, 0 ) );
+	EXPECT_TRUE( tree.insert_after( 2, 2.f, 1 ) );
+	EXPECT_TRUE( tree.insert_after( 3, 3.f, 2 ) );
 
 	EXPECT_TRUE( tree.insert( 6, 6.f, 2 ) );
 
 	EXPECT_TRUE( tree.insert( 4, 4.f, 1 ) );
-	EXPECT_TRUE( tree.insert( 5, 5.f, 1 ) );
+	EXPECT_TRUE( tree.insert_after( 5, 5.f, 4 ) );
 	// Extra root
 	EXPECT_TRUE( tree.insert( 7, 7.f ) );
 
