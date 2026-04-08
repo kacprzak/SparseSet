@@ -83,6 +83,24 @@ public:
 		return m_map.insert( key, value );
 	}
 
+	bool insert_after( const key_type& key, const value_type& value, const key_type& sibling )
+	{
+		if( m_map.contains( key ) )
+			return false;
+
+		if( not m_relations.contains( sibling ) )
+			m_relations.insert( sibling, {} );
+
+		auto& sibling_relations = m_relations.at( sibling );
+
+		Relation relation{ .next = sibling_relations.next, .parent = sibling_relations.parent };
+
+		sibling_relations.next = key;
+
+		m_relations.insert( key, relation );
+		return m_map.insert( key, value );
+	}
+
 	bool erase( const key_type& key )
 	{
 		if( not m_map.contains( key ) )

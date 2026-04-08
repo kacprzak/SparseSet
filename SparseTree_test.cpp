@@ -68,8 +68,8 @@ TEST( SparseTree, children )
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
 	// Children
 	EXPECT_TRUE( tree.insert( 3, 3.f, 0 ) );
-	EXPECT_TRUE( tree.insert( 2, 2.f, 0 ) );
-	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
+	EXPECT_TRUE( tree.insert_after( 2, 2.f, 3 ) );
+	EXPECT_TRUE( tree.insert_after( 1, 1.f, 2 ) );
 
 	EXPECT_TRUE( tree.insert( 4, 4.f, 2 ) );
 	EXPECT_TRUE( tree.insert( 5, 5.f, 2 ) );
