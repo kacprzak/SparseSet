@@ -183,9 +183,6 @@ public:
 	[[nodiscard]]
 	constexpr auto children_begin( const key_type& key ) noexcept -> iterator
 	{
-		if( not m_relations.contains( key ) )
-			return end();
-
 		return m_map.find( m_relations.at( key ).children );
 	}
 
