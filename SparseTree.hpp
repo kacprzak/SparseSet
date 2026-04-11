@@ -60,6 +60,22 @@ private:
 		return list;
 	}
 
+	void erase_children( key_type list )
+	{
+		auto current = list;
+		while( current != s_invalid )
+		{
+			const auto& relation = m_relations.at( current );
+			const auto next      = relation.next;
+
+			erase_children( relation.children );
+			m_relations.erase( current );
+			m_map.erase( current );
+
+			current = next;
+		}
+	}
+
 public:
 	Tree() = default;
 	Tree( std::initializer_list< std::pair< key_type, value_type > > init ) : m_map{ init.begin(), init.end() } {}
@@ -133,13 +149,7 @@ public:
 		list       = list_remove( list, key );
 
 		// Erase children
-		auto child = relation.children;
-		while( child != s_invalid )
-		{
-			const auto next = m_relations.at( child ).next;
-			erase( child );
-			child = next;
-		}
+		erase_children( relation.children );
 
 		m_relations.erase( key );
 
