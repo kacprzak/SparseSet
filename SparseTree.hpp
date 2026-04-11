@@ -197,13 +197,15 @@ public:
 	{
 		assert( m_queue.empty() );
 
-		// Add all root nodes
-		for( const auto& [ k, _ ] : m_map )
+		// Add all root nodes to queue
+		auto root = m_root;
+		while( root != s_invalid )
 		{
-			if( parent( k ) == end() )
-				m_queue.push( k );
+			m_queue.push( root );
+			root = m_relations.at( root ).next;
 		}
 
+		// Traverse
 		while( not m_queue.empty() )
 		{
 			const auto curr = m_queue.front();
