@@ -211,18 +211,19 @@ public:
 		// Traverse
 		while( not m_queue.empty() )
 		{
-			const auto curr = m_queue.front();
+			const auto current = m_queue.front();
 			m_queue.pop();
 
 			// Add children to queue
-			if( m_relations.contains( curr ) )
+			auto child = m_relations.at( current ).children;
+			while( child != s_invalid )
 			{
-				for( auto it = m_map.find( m_relations.at( curr ).children ); it != end(); it = children_next( it ) )
-					m_queue.push( it->first );
+				m_queue.push( child );
+				child = m_relations.at( child ).next;
 			}
 
 			// Visit
-			f( *m_map.find( curr ) );
+			f( *m_map.find( current ) );
 		}
 	}
 
