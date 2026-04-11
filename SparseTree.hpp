@@ -152,8 +152,11 @@ public:
 		erase_children( relation.children );
 
 		m_relations.erase( key );
+		const bool erased = m_map.erase( key );
 
-		return m_map.erase( key );
+		assert( m_map.size() == m_relations.size() );
+
+		return erased;
 	}
 
 	[[nodiscard]] auto at( const key_type& key ) -> reference { return m_map.at( key ); }
