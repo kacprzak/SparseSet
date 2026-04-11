@@ -147,7 +147,7 @@ TEST( SparseTree, sort_bfs )
 	EXPECT_TRUE( tree.insert( 4, 4.f, 1 ) );
 	EXPECT_TRUE( tree.insert_after( 5, 5.f, 4 ) );
 	// Extra root
-	EXPECT_TRUE( tree.insert( 7, 7.f ) );
+	EXPECT_TRUE( tree.insert_after( 7, 7.f, 0 ) );
 
 	{
 		const std::vector< float > expected{ 0.f, 7.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };

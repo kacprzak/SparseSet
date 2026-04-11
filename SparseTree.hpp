@@ -31,6 +31,35 @@ private:
 		key_type parent   = s_invalid; //< parent
 	};
 
+	/**
+	 * Removes key from linked list.
+	 *
+	 * Returns new list front.
+	 */
+	key_type list_remove( key_type list, key_type to_remove )
+	{
+		// If to_remove is first element.
+		if( list == to_remove )
+			return m_relations.at( to_remove ).next;
+
+		// Scan to find and update previous element.
+		auto current = list;
+		while( current != s_invalid )
+		{
+			auto& relation = m_relations.at( current );
+
+			if( relation.next == to_remove )
+			{
+				relation.next = m_relations.at( to_remove ).next;
+				break;
+			}
+
+			current = relation.next;
+		}
+
+		return list;
+	}
+
 public:
 	Tree() = default;
 	Tree( std::initializer_list< std::pair< key_type, value_type > > init ) : m_map{ init.begin(), init.end() } {}
@@ -43,6 +72,7 @@ public:
 	{
 		m_map.clear();
 		m_relations.clear();
+		m_root = s_invalid;
 	}
 
 	constexpr void reserve( size_type n )
@@ -51,14 +81,18 @@ public:
 		m_relations.reserve( n );
 	}
 
-	bool insert( const key_type& key, const value_type& value ) { return m_map.insert( key, value ); }
+	bool insert( const key_type& key, const value_type& value )
+	{
+		m_relations.insert( key, Relation{ .next = m_root } );
+		m_root = key;
+
+		return m_map.insert( key, value );
+	}
+
 	bool insert( const key_type& key, const value_type& value, const key_type& parent )
 	{
 		if( m_map.contains( key ) )
 			return false;
-
-		if( not m_relations.contains( parent ) )
-			m_relations.insert( parent, {} );
 
 		Relation relation{ .parent = parent };
 
@@ -77,14 +111,11 @@ public:
 		if( m_map.contains( key ) )
 			return false;
 
-		if( not m_relations.contains( sibling ) )
-			m_relations.insert( sibling, {} );
+		auto& sibling_relation = m_relations.at( sibling );
 
-		auto& sibling_relations = m_relations.at( sibling );
+		Relation relation{ .next = sibling_relation.next, .parent = sibling_relation.parent };
 
-		Relation relation{ .next = sibling_relations.next, .parent = sibling_relations.parent };
-
-		sibling_relations.next = key;
+		sibling_relation.next = key;
 
 		m_relations.insert( key, relation );
 		return m_map.insert( key, value );
@@ -95,43 +126,22 @@ public:
 		if( not m_map.contains( key ) )
 			return false;
 
-		if( m_relations.contains( key ) )
-		{
-			const auto relations = m_relations.at( key );
-			// Erase children
-			auto child = relations.children;
-			while( child != s_invalid )
-			{
-				const auto next = m_relations.at( child ).next;
-				erase( child );
-				child = next;
-			}
+		const auto& relation = m_relations.at( key );
 
-			// Detach from parent
-			if( relations.parent != s_invalid )
-			{
-				auto& parent_relations = m_relations.at( relations.parent );
-				if( parent_relations.children == key )
-				{
-					// If first child.
-					parent_relations.children = relations.next;
-				}
-				else
-				{
-					// Scan parent children until previous found.
-					for( auto it = m_map.find( parent_relations.children ); it != end(); it = children_next( it ) )
-					{
-						auto& child_relations = m_relations.at( it->first );
-						if( child_relations.next == key )
-						{
-							child_relations.next = relations.next;
-							break;
-						}
-					}
-				}
-			}
-			m_relations.erase( key );
+		// Remove from children list or roots list.
+		auto& list = relation.parent != s_invalid ? m_relations.at( relation.parent ).children : m_root;
+		list       = list_remove( list, key );
+
+		// Erase children
+		auto child = relation.children;
+		while( child != s_invalid )
+		{
+			const auto next = m_relations.at( child ).next;
+			erase( child );
+			child = next;
 		}
+
+		m_relations.erase( key );
 
 		return m_map.erase( key );
 	}
@@ -142,18 +152,12 @@ public:
 	[[nodiscard]]
 	auto parent( const key_type& key ) -> iterator
 	{
-		if( not m_relations.contains( key ) )
-			return end();
-
 		return m_map.find( m_relations.at( key ).parent );
 	}
 
 	[[nodiscard]]
 	auto parent( const key_type& key ) const -> const_iterator
 	{
-		if( not m_relations.contains( key ) )
-			return end();
-
 		return m_map.find( m_relations.at( key ).parent );
 	}
 
@@ -228,6 +232,7 @@ public:
 private:
 	Map< key_type, value_type > m_map;
 	Map< key_type, Relation > m_relations;
+	key_type m_root = s_invalid;    //< first root
 	std::queue< key_type > m_queue; //< for BFS
 };
 
