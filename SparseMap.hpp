@@ -255,7 +255,7 @@ public:
 			m_current += n;
 			return *this;
 		}
-		constexpr auto operator+( const difference_type n ) const -> IteratorProxy { return m_current + n; }
+		constexpr auto operator+( const difference_type n ) const -> IteratorProxy { return IteratorProxy{ m_current + n }; }
 
 		constexpr auto operator--() -> IteratorProxy& { return --m_current, *this; }
 		constexpr auto operator--( int ) -> IteratorProxy
@@ -269,7 +269,7 @@ public:
 			m_current -= n;
 			return *this;
 		}
-		constexpr auto operator-( const difference_type n ) const -> IteratorProxy { return m_current - n; }
+		constexpr auto operator-( const difference_type n ) const -> IteratorProxy { return IteratorProxy{ m_current - n }; }
 
 		constexpr auto operator-( const IteratorProxy& other ) const -> difference_type
 		{
