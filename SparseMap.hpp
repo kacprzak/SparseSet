@@ -296,8 +296,6 @@ public:
 	[[nodiscard]] constexpr auto end() noexcept -> iterator { return iterator{ m_dense.end() }; }
 	[[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return const_iterator{ m_dense.begin() }; }
 	[[nodiscard]] constexpr auto end() const noexcept -> const_iterator { return const_iterator{ m_dense.end() }; }
-	[[nodiscard]] constexpr auto cbegin() noexcept -> const_iterator { return const_iterator{ m_dense.cbegin() }; }
-	[[nodiscard]] constexpr auto cend() noexcept -> const_iterator { return const_iterator{ m_dense.cend() }; }
 	[[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator
 	{
 		return const_iterator{ m_dense.cbegin() };

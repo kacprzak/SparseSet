@@ -99,9 +99,11 @@ public:
 
 	bool insert( const key_type& key, const value_type& value )
 	{
+		if( m_map.contains( key ) )
+			return false;
+
 		m_relations.insert( key, Relation{ .next = m_root } );
 		m_root = key;
-
 		return m_map.insert( key, value );
 	}
 
@@ -142,14 +144,19 @@ public:
 		if( not m_map.contains( key ) )
 			return false;
 
-		const auto& relation = m_relations.at( key );
+		const Relation r = m_relations.at( key );
 
-		// Remove from children list or roots list.
-		auto& list = relation.parent != s_invalid ? m_relations.at( relation.parent ).children : m_root;
-		list       = list_remove( list, key );
+		if( r.parent != s_invalid )
+		{
+			auto& parent_children = m_relations.at( r.parent ).children;
+			parent_children       = list_remove( parent_children, key );
+		}
+		else
+		{
+			m_root = list_remove( m_root, key );
+		}
 
-		// Erase children
-		erase_children( relation.children );
+		erase_children( r.children );
 
 		m_relations.erase( key );
 		const bool erased = m_map.erase( key );
@@ -178,8 +185,6 @@ public:
 	[[nodiscard]] constexpr auto end() noexcept -> iterator { return m_map.end(); }
 	[[nodiscard]] constexpr auto begin() const noexcept -> const_iterator { return m_map.begin(); }
 	[[nodiscard]] constexpr auto end() const noexcept -> const_iterator { return m_map.end(); }
-	[[nodiscard]] constexpr auto cbegin() noexcept -> const_iterator { return m_map.cbegin(); }
-	[[nodiscard]] constexpr auto cend() noexcept -> const_iterator { return m_map.cend(); }
 	[[nodiscard]] constexpr auto cbegin() const noexcept -> const_iterator { return m_map.cbegin(); }
 	[[nodiscard]] constexpr auto cend() const noexcept -> const_iterator { return m_map.cend(); }
 
