@@ -80,7 +80,13 @@ private:
 
 public:
 	Tree() = default;
-	Tree( std::initializer_list< std::pair< key_type, value_type > > init ) : m_map{ init.begin(), init.end() } {}
+	Tree( std::initializer_list< std::pair< key_type, value_type > > init )
+	{
+		m_map.reserve( init.size() );
+		m_relations.reserve( init.size() );
+		for( const auto& [ key, value ] : init )
+			insert( key, value );
+	}
 
 	[[nodiscard]] bool empty() const noexcept { return m_map.empty(); }
 	[[nodiscard]] size_type size() const noexcept { return m_map.size(); }
@@ -203,37 +209,43 @@ public:
 	}
 
 	template< typename Callable >
-	void for_each_bfs( Callable f )
+	void for_each_bfs( Callable&& f )
 	{
-		assert( m_queue.empty() );
+		for_each_bfs_impl( *this, std::forward< Callable >( f ) );
+	}
 
-		// Add all root nodes to queue
-		auto root = m_root;
-		while( root != s_invalid )
+	template< typename Callable >
+	void for_each_bfs( Callable&& f ) const
+	{
+		for_each_bfs_impl( *this, std::forward< Callable >( f ) );
+	}
+
+private:
+	template< typename Self, typename Callable >
+	static void for_each_bfs_impl( Self& self, Callable&& f )
+	{
+		auto& queue = self.m_bfs_queue;
+		assert( queue.empty() );
+
+		for( auto root = self.m_root; root != s_invalid; root = self.m_relations.at( root ).next )
+			queue.push( root );
+
+		while( not queue.empty() )
 		{
-			m_queue.push( root );
-			root = m_relations.at( root ).next;
-		}
+			const auto current = queue.front();
+			queue.pop();
 
-		// Traverse
-		while( not m_queue.empty() )
-		{
-			const auto current = m_queue.front();
-			m_queue.pop();
-
-			// Add children to queue
-			auto child = m_relations.at( current ).children;
-			while( child != s_invalid )
+			for( auto child = self.m_relations.at( current ).children; child != s_invalid;
+			     child      = self.m_relations.at( child ).next )
 			{
-				m_queue.push( child );
-				child = m_relations.at( child ).next;
+				queue.push( child );
 			}
 
-			// Visit
-			f( *m_map.find( current ) );
+			f( *self.m_map.find( current ) );
 		}
 	}
 
+public:
 	void sort_bfs()
 	{
 		std::vector< size_type > permutation;
@@ -243,7 +255,7 @@ public:
 		    [ & ]( const auto& kv )
 		    {
 			    const auto it = m_map.find( kv.first );
-			    permutation.emplace_back( std::distance( m_map.begin(), it ) );
+			    permutation.push_back( static_cast< size_type >( std::distance( m_map.begin(), it ) ) );
 		    } );
 
 		m_map.reorder( permutation );
@@ -252,8 +264,8 @@ public:
 private:
 	Map< key_type, value_type > m_map;
 	Map< key_type, Relation > m_relations;
-	key_type m_root = s_invalid;    //< first root
-	std::queue< key_type > m_queue; //< for BFS
+	key_type m_root = s_invalid;                //< first root
+	mutable std::queue< key_type > m_bfs_queue; //< scratch for BFS traversal
 };
 
 } // namespace sparse
