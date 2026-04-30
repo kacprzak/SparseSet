@@ -105,6 +105,16 @@ public:
 		m_relations.reserve( n );
 	}
 
+	/**
+	 * Inserts a new root node with the given @p key and @p value.
+	 *
+	 * The new node is prepended to the root list (i.e. it becomes the new
+	 * first root) and has no parent or children.
+	 *
+	 * @param  key   Unique key identifying the node.
+	 * @param  value Value to associate with the node.
+	 * @returns `true` if the node was inserted; `false` if @p key already exists.
+	 */
 	bool insert( const key_type& key, const value_type& value )
 	{
 		if( m_map.contains( key ) )
@@ -115,6 +125,18 @@ public:
 		return m_map.insert( key, value );
 	}
 
+	/**
+	 * Inserts a new node with the given @p key and @p value as a child of @p parent.
+	 *
+	 * The new node is prepended to @p parent's child list (i.e. it becomes
+	 * the new first child) and inherits @p parent as its parent.
+	 *
+	 * @param  key    Unique key identifying the new node.
+	 * @param  value  Value to associate with the node.
+	 * @param  parent Key of an existing node that will become the parent.
+	 * @returns `true` if the node was inserted; `false` if @p key already exists.
+	 * @pre @p parent must exist in the tree; throws if not found.
+	 */
 	bool insert( const key_type& key, const value_type& value, const key_type& parent )
 	{
 		if( m_map.contains( key ) )
@@ -132,6 +154,19 @@ public:
 		return m_map.insert( key, value );
 	}
 
+	/**
+	 * Inserts a new node with the given @p key and @p value immediately after @p sibling
+	 * in the sibling list.
+	 *
+	 * The new node shares the same parent as @p sibling and is placed directly
+	 * after it, pushing any subsequent siblings further along the list.
+	 *
+	 * @param  key     Unique key identifying the new node.
+	 * @param  value   Value to associate with the node.
+	 * @param  sibling Key of an existing node after which the new node is inserted.
+	 * @returns `true` if the node was inserted; `false` if @p key already exists.
+	 * @pre @p sibling must exist in the tree; throws if not found.
+	 */
 	bool insert_after( const key_type& key, const value_type& value, const key_type& sibling )
 	{
 		if( m_map.contains( key ) )
@@ -208,12 +243,30 @@ public:
 		return m_map.find( m_relations.at( it->first ).next );
 	}
 
+	/**
+	 * Traverses the tree in breadth-first order, invoking @p f on each node.
+	 *
+	 * The callback receives a reference to the underlying map's key/value pair
+	 * (i.e. `std::pair<const key_type, value_type>&`). Visitation order is:
+	 * all roots first (in root-list order), then their children, and so on.
+	 *
+	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
+	 *
+	 * @tparam Callable Invocable with signature `void(iterator::reference)`.
+	 * @param  f        Callback invoked once per node.
+	 */
 	template< typename Callable >
 	void for_each_bfs( Callable&& f )
 	{
 		for_each_bfs_impl( *this, std::forward< Callable >( f ) );
 	}
 
+	/**
+	 * Const overload of for_each_bfs. The callback receives a const reference
+	 * to each key/value pair and must not mutate the tree during traversal.
+	 *
+	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
+	 */
 	template< typename Callable >
 	void for_each_bfs( Callable&& f ) const
 	{
@@ -221,6 +274,9 @@ public:
 	}
 
 private:
+	/**
+	 * Shared BFS implementation for both const and non-const overloads.
+	 */
 	template< typename Self, typename Callable >
 	static void for_each_bfs_impl( Self& self, Callable&& f )
 	{
