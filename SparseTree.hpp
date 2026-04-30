@@ -10,6 +10,52 @@
 namespace sparse
 {
 
+/**
+ * An intrusive forest (collection of trees) keyed by unsigned integers.
+ *
+ * Nodes are stored in a flat `Map<Key, T>` for cache-friendly iteration, with
+ * a parallel `Map<Key, Relation>` tracking parent/child/sibling links as an
+ * intrusive linked list. This allows O(1) insertion and erasure while keeping
+ * values contiguous in memory.
+ *
+ * ### Structure
+ * - Multiple root nodes are supported, forming a **forest**.
+ * - Each node may have an arbitrary number of children.
+ * - Children and roots are stored as singly-linked lists; new nodes are always
+ *   prepended to the relevant list.
+ * - Erasing a node also recursively erases its entire subtree.
+ *
+ * ### Insertion
+ * | Method          | Result                                              |
+ * |-----------------|-----------------------------------------------------|
+ * | `insert(k, v)`           | New root node, prepended to the root list. |
+ * | `insert(k, v, parent)`   | New first child of `parent`.               |
+ * | `insert_after(k, v, sibling)` | New node directly after `sibling`.    |
+ *
+ * ### Iteration
+ * - `begin()` / `end()` iterate over **all** nodes in flat storage order,
+ *   regardless of tree structure.
+ * - `for_each_bfs()` traverses nodes in breadth-first order across all roots.
+ * - `children_begin()` / `children_next()` allow manual child traversal.
+ * - `sort_bfs()` reorders flat storage to match BFS visitation order, improving
+ *   cache locality for breadth-first workloads.
+ *
+ * ### Complexity
+ * | Operation       | Time      |
+ * |-----------------|-----------|
+ * | `insert`        | O(1)      |
+ * | `erase`         | O(n) — erases entire subtree |
+ * | `contains`      | O(1)      |
+ * | `at`            | O(1)      |
+ * | `for_each_bfs`  | O(n)      |
+ * | `sort_bfs`      | O(n)      |
+ *
+ * @note `sort_bfs` relies on `Map`'s iterator being random access for O(1)
+ *       `std::distance` calls. The overall sort is therefore O(n).
+ *
+ * @tparam Key Unsigned integer type used to identify nodes.
+ * @tparam T   Value type stored at each node. Must be swappable.
+ */
 template< std::unsigned_integral Key, std::swappable T >
 class Tree final
 {
@@ -182,6 +228,16 @@ public:
 		return m_map.insert( key, value );
 	}
 
+	/**
+	 * Erases the node identified by @p key and its entire subtree.
+	 *
+	 * The node is unlinked from its parent's child list (or from the root list
+	 * if it has no parent), then all of its descendants are recursively erased
+	 * before the node itself is removed from storage.
+	 *
+	 * @param  key Key of the node to erase.
+	 * @returns `true` if the node was erased; `false` if @p key was not found.
+	 */
 	bool erase( const key_type& key )
 	{
 		if( not m_map.contains( key ) )
