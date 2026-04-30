@@ -16,15 +16,17 @@ namespace sparse
 {
 
 /**
- * Set of keys that are stored packed in memory.
+ * A sparse-set backed collection of unsigned integer keys stored contiguously in memory.
  *
- * This class allows for fast iteration on all stored keys like when using std::vector, but this collection provides
- * 0(1) complexity for `contains`, `insert` and `erase` methods. This is achieved at expense of memory.
+ * Provides O(1) `contains`, `insert`, and `erase` with cache-friendly O(n)
+ * iteration, at the expense of additional memory proportional to the largest
+ * key ever inserted. Erasure is performed via swap-and-pop, so iteration order
+ * is not stable — any mutation may reorder elements. Call `sort` to restore
+ * key order.
  *
- * Keys are not stored in order, unless `sort` is called. Any modification may reorder items.
- *
- * @tparam Key key type. Using large values for keys will require to allocate memory for all smaller key values even if
- * not used. This is why it is recommended to use smallest type possible, for example std::uint16_t.
+ * @tparam Key Unsigned integer key type. Memory is allocated for every value
+ *             in [0, max_key], so prefer the smallest type that fits your key
+ *             range (e.g. `std::uint16_t`).
  */
 template< std::unsigned_integral Key >
 class Set final
@@ -97,7 +99,12 @@ public:
 	}
 
 	/**
-	 * Returns true if insertion took place and false if there is already value under index.
+	 * Inserts @p key into the set if it is not already present.
+	 *
+	 * @param  key Key to insert. Must not equal the sentinel value
+	 *             (`std::numeric_limits<key_type>::max()`).
+	 * @returns `true` if the key was inserted; `false` if it already existed.
+	 * @throws std::logic_error if @p key is the sentinel value.
 	 */
 	bool insert( const key_type& key )
 	{
@@ -112,7 +119,13 @@ public:
 	}
 
 	/**
-	 * Returns true if erase took place.
+	 * Erases @p key from the set, if present.
+	 *
+	 * Uses swap-and-pop internally, so the erased slot is filled by the last
+	 * element. Iteration order is not preserved after erasure.
+	 *
+	 * @param  key Key to erase.
+	 * @returns `true` if the key was erased; `false` if it was not found.
 	 */
 	bool erase( const key_type& key )
 	{
@@ -129,7 +142,10 @@ public:
 	}
 
 	/**
-	 * Sorts stored keys in memory.
+	 * Sorts the dense storage in ascending key order.
+	 *
+	 * After this call, iterating via `begin()`/`end()` visits keys in ascending
+	 * order. Invalidates all iterators. Complexity: O(n log n).
 	 */
 	constexpr void sort()
 	{
@@ -149,6 +165,16 @@ public:
 		}
 	}
 
+	/**
+	 * Reorders dense storage according to the given index permutation.
+	 *
+	 * @p permutation must be the same size as the current number of elements,
+	 * where `permutation[i]` is the index that element `i` should move to.
+	 * The permutation is applied in-place and consumed (modified) during the call.
+	 *
+	 * @param permutation A span of destination indices, one per element.
+	 * @pre   `permutation.size() == size()`.
+	 */
 	constexpr void reorder( std::span< size_type > permutation )
 	{
 		assert( permutation.size() == m_dense.size() );
