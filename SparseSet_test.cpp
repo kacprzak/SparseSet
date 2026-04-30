@@ -14,7 +14,7 @@ TEST( SparseSet, ctor )
 	EXPECT_TRUE( set.empty() );
 }
 
-TEST( SparseSet, intializer_list )
+TEST( SparseSet, initializer_list )
 {
 	sparse::Set< std::uint16_t > set{ 1, 6, 32, 5, 42, 16, 16, 16, 16, 16 };
 

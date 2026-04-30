@@ -15,6 +15,18 @@ TEST( SparseTree, ctor )
 	EXPECT_TRUE( tree.empty() );
 }
 
+TEST( SparseTree, initializer_list )
+{
+	sparse::Tree< std::uint16_t, float > tree{ { 0, 0.f }, { 1, 1.f }, { 2, 2.f } };
+
+	EXPECT_FALSE( tree.empty() );
+	EXPECT_EQ( tree.size(), 3u );
+
+	int counter = 0;
+	tree.for_each_bfs( [ & ]( const auto& kv ) { ++counter; } );
+	EXPECT_EQ( counter, 3 );
+}
+
 TEST( SparseTree, iterator )
 {
 	using namespace std::ranges;

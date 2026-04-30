@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <concepts>
+#include <iterator>
 #include <queue>
 
 namespace sparse
@@ -18,8 +19,8 @@ public:
 	using size_type       = std::size_t;
 	using reference       = value_type&;
 	using const_reference = const value_type&;
-	using iterator        = Map< Key, T >::iterator;
-	using const_iterator  = Map< Key, T >::const_iterator;
+	using iterator        = typename Map< Key, T >::iterator;
+	using const_iterator  = typename Map< Key, T >::const_iterator;
 
 private:
 	static constexpr auto s_invalid = std::numeric_limits< key_type >::max();
@@ -51,12 +52,13 @@ private:
 			if( relation.next == to_remove )
 			{
 				relation.next = m_relations.at( to_remove ).next;
-				break;
+				return list;
 			}
 
 			current = relation.next;
 		}
 
+		assert( false && "list_remove: to_remove not found in list" );
 		return list;
 	}
 
