@@ -23,7 +23,7 @@ TEST( SparseTree, initializer_list )
 	EXPECT_EQ( tree.size(), 3u );
 
 	int counter = 0;
-	tree.for_each_bfs( [ & ]( const auto& kv ) { ++counter; } );
+	tree.for_each_bfs( [ & ]( const auto& /*kv*/ ) { ++counter; } );
 	EXPECT_EQ( counter, 3 );
 }
 
