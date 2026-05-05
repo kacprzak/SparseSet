@@ -80,6 +80,28 @@ BENCHMARK_DEFINE_F( BM_SparseTree, for_each_bfs )( benchmark::State& state )
 }
 BENCHMARK_REGISTER_F( BM_SparseTree, for_each_bfs )->Range( 8, 8 << 10 )->Complexity();
 
+BENCHMARK_DEFINE_F( BM_SparseTree, for_each_dfs )( benchmark::State& state )
+{
+	const auto size = state.range( 0 );
+
+	for( auto _ : state )
+	{
+		float sum = 0.f;
+		tree.for_each_dfs(
+		    [ &sum ]( const auto& kv )
+		    {
+			    sum += kv.second;
+			    return true;
+		    },
+		    []( const auto& /*kv*/ ) {} );
+		benchmark::DoNotOptimize( sum );
+	}
+
+	state.SetItemsProcessed( state.iterations() * size );
+	state.SetComplexityN( size );
+}
+BENCHMARK_REGISTER_F( BM_SparseTree, for_each_dfs )->Range( 8, 8 << 10 )->Complexity();
+
 BENCHMARK_DEFINE_F( BM_SparseTreeSorted, for_each )( benchmark::State& state )
 {
 	const auto size = state.range( 0 );

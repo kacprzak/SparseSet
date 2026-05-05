@@ -113,10 +113,18 @@ TEST( SparseTree, children )
 	}
 }
 
-TEST( SparseTree, for_each_bfs )
+namespace
 {
-	sparse::Tree< std::uint8_t, float > tree;
-
+void init( sparse::Tree< std::uint8_t, float >& tree )
+{
+	// 7
+	// 0
+	// ├── 1
+	// │   ├── 4
+	// │   └── 5
+	// ├── 2
+	// │   └── 6
+	// └── 3
 	// Root
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
 	// Children
@@ -130,6 +138,13 @@ TEST( SparseTree, for_each_bfs )
 	EXPECT_TRUE( tree.insert_after( 5, 5.f, 4 ) );
 	// Extra root
 	EXPECT_TRUE( tree.insert( 7, 7.f ) );
+}
+} // namespace
+
+TEST( SparseTree, for_each_bfs )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
 
 	{
 		const std::vector< float > expected{ 7.f, 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
@@ -141,28 +156,36 @@ TEST( SparseTree, for_each_bfs )
 	}
 }
 
+TEST( SparseTree, for_each_dfs )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	{
+		const std::vector< float > expected{ 7.f, 0.f, 1.f, 4.f, 5.f, 2.f, 6.f, 3.f };
+
+		std::vector< float > result;
+		tree.for_each_dfs(
+		    [ & ]( const auto& kv )
+		    {
+			    result.push_back( kv.second );
+			    return true;
+		    },
+		    []( const auto& ) {} );
+
+		EXPECT_EQ( result, expected );
+	}
+}
+
 TEST( SparseTree, sort_bfs )
 {
 	using namespace std::ranges;
 
 	sparse::Tree< std::uint8_t, float > tree;
-
-	// Root
-	EXPECT_TRUE( tree.insert( 0, 0.f ) );
-	// Children
-	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
-	EXPECT_TRUE( tree.insert_after( 2, 2.f, 1 ) );
-	EXPECT_TRUE( tree.insert_after( 3, 3.f, 2 ) );
-
-	EXPECT_TRUE( tree.insert( 6, 6.f, 2 ) );
-
-	EXPECT_TRUE( tree.insert( 4, 4.f, 1 ) );
-	EXPECT_TRUE( tree.insert_after( 5, 5.f, 4 ) );
-	// Extra root
-	EXPECT_TRUE( tree.insert_after( 7, 7.f, 0 ) );
+	init( tree );
 
 	{
-		const std::vector< float > expected{ 0.f, 7.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
+		const std::vector< float > expected{ 7.f, 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
 
 		tree.sort_bfs();
 

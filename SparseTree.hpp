@@ -6,6 +6,7 @@
 #include <concepts>
 #include <iterator>
 #include <queue>
+#include <vector>
 
 namespace sparse
 {
@@ -36,6 +37,7 @@ namespace sparse
  * - `begin()` / `end()` iterate over **all** nodes in flat storage order,
  *   regardless of tree structure.
  * - `for_each_bfs()` traverses nodes in breadth-first order across all roots.
+ * - `for_each_dfs()` traverses nodes in pre-order depth-first order across all roots.
  * - `children_begin()` / `children_next()` allow manual child traversal.
  * - `sort_bfs()` reorders flat storage to match BFS visitation order, improving
  *   cache locality for breadth-first workloads.
@@ -48,6 +50,7 @@ namespace sparse
  * | `contains`      | O(1)      |
  * | `at`            | O(1)      |
  * | `for_each_bfs`  | O(n)      |
+ * | `for_each_dfs`  | O(n)      |
  * | `sort_bfs`      | O(n)      |
  *
  * @note `sort_bfs` relies on `Map`'s iterator being random access for O(1)
@@ -292,9 +295,19 @@ public:
 	{
 		return m_map.find( m_relations.at( key ).children );
 	}
+	[[nodiscard]]
+	constexpr auto children_begin( const key_type& key ) const noexcept -> const_iterator
+	{
+		return m_map.find( m_relations.at( key ).children );
+	}
 
 	[[nodiscard]]
 	constexpr auto children_next( const iterator& it ) noexcept -> iterator
+	{
+		return m_map.find( m_relations.at( it->first ).next );
+	}
+	[[nodiscard]]
+	constexpr auto children_next( const const_iterator& it ) const noexcept -> const_iterator
 	{
 		return m_map.find( m_relations.at( it->first ).next );
 	}
@@ -329,6 +342,40 @@ public:
 		for_each_bfs_impl( *this, std::forward< Callable >( f ) );
 	}
 
+	/**
+	 * Traverses the tree in depth-first order, invoking @p on_enter and @p on_leave on each node.
+	 *
+	 * Both callbacks receive a reference to the underlying map's key/value pair
+	 * (i.e. `std::pair<const key_type, value_type>&`).
+	 * @p on_enter is called before a node's children are visited; it returns `bool` —
+	 * returning `false` skips the node's entire subtree but @p on_leave is still called for that node.
+	 * @p on_leave is called after all of a node's descendants have been visited.
+	 *
+	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
+	 *
+	 * @tparam OnEnter Invocable with signature `bool(iterator::reference)`.
+	 * @tparam OnLeave Invocable with signature `void(iterator::reference)`.
+	 * @param  on_enter Callback invoked before a node's children.
+	 * @param  on_leave Callback invoked after a node's children.
+	 */
+	template< typename OnEnter, typename OnLeave >
+	void for_each_dfs( OnEnter&& on_enter, OnLeave&& on_leave )
+	{
+		for_each_dfs_impl( *this, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
+	}
+
+	/**
+	 * Const overload of for_each_dfs. Callbacks receive const references and must not
+	 * mutate the tree during traversal.
+	 *
+	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
+	 */
+	template< typename OnEnter, typename OnLeave >
+	void for_each_dfs( OnEnter&& on_enter, OnLeave&& on_leave ) const
+	{
+		for_each_dfs_impl( *this, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
+	}
+
 private:
 	/**
 	 * Shared BFS implementation for both const and non-const overloads.
@@ -357,6 +404,52 @@ private:
 		}
 	}
 
+	/**
+	 * Shared DFS implementation for both const and non-const overloads.
+	 *
+	 * Uses an explicit stack of (key, is_leave) pairs. On first visit (is_leave == false)
+	 * a leave sentinel (key, true) is pushed immediately, then on_enter is called; if it
+	 * returns true the node's children are pushed. On the sentinel (is_leave == true)
+	 * on_leave is called — so on_leave fires regardless of whether children were visited.
+	 */
+	template< typename Self, typename OnEnter, typename OnLeave >
+	static void for_each_dfs_impl( Self& self, OnEnter&& on_enter, OnLeave&& on_leave )
+	{
+		auto& stack = self.m_dfs_stack;
+		assert( stack.empty() );
+
+		for( auto root = self.m_root; root != s_invalid; root = self.m_relations.at( root ).next )
+			stack.emplace_back( root, false );
+
+		std::reverse( stack.begin(), stack.end() );
+
+		while( not stack.empty() )
+		{
+			const auto [ current, is_leave ] = stack.back();
+			stack.pop_back();
+
+			if( is_leave )
+			{
+				on_leave( *self.m_map.find( current ) );
+				continue;
+			}
+
+			stack.emplace_back( current, true );
+
+			if( not on_enter( *self.m_map.find( current ) ) )
+				continue;
+
+			const auto children_start = static_cast< std::ptrdiff_t >( stack.size() );
+			for( auto child = self.m_relations.at( current ).children; child != s_invalid;
+			     child      = self.m_relations.at( child ).next )
+			{
+				stack.emplace_back( child, false );
+			}
+
+			std::reverse( stack.begin() + children_start, stack.end() );
+		}
+	}
+
 public:
 	void sort_bfs()
 	{
@@ -376,8 +469,9 @@ public:
 private:
 	Map< key_type, value_type > m_map;
 	Map< key_type, Relation > m_relations;
-	key_type m_root = s_invalid;                //< first root
-	mutable std::queue< key_type > m_bfs_queue; //< scratch for BFS traversal
+	key_type m_root = s_invalid;                                    //< first root
+	mutable std::queue< key_type > m_bfs_queue;                     //< scratch for BFS traversal
+	mutable std::vector< std::pair< key_type, bool > > m_dfs_stack; //< scratch for DFS traversal
 };
 
 } // namespace sparse
