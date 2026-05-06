@@ -76,17 +76,19 @@ TEST( SparseTree, children )
 {
 	sparse::Tree< std::uint8_t, float > tree;
 
-	// Root
+	// 0
+	// ├── 3
+	// ├── 2
+	// │   ├── 5
+	// │   └── 4
+	// └── 1
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
-	// Children
 	EXPECT_TRUE( tree.insert( 3, 3.f, 0 ) );
 	EXPECT_TRUE( tree.insert_after( 2, 2.f, 3 ) );
 	EXPECT_TRUE( tree.insert_after( 1, 1.f, 2 ) );
-
 	EXPECT_TRUE( tree.insert( 4, 4.f, 2 ) );
 	EXPECT_TRUE( tree.insert( 5, 5.f, 2 ) );
-
-	EXPECT_FALSE( tree.insert( 5, -5.f, 2 ) );
+	EXPECT_FALSE( tree.insert( 5, -5.f, 2 ) ); // duplicate key
 
 	{
 		const std::vector< float > expected{ 3.f, 2.f, 1.f };
@@ -99,7 +101,7 @@ TEST( SparseTree, children )
 	}
 
 	EXPECT_EQ( tree.size(), 6u );
-	tree.erase( 2 );
+	tree.erase( 2 ); // erases node 2 and its subtree (4, 5)
 	EXPECT_EQ( tree.size(), 3u );
 
 	{
@@ -117,7 +119,8 @@ namespace
 {
 void init( sparse::Tree< std::uint8_t, float >& tree )
 {
-	// 7
+	// Forest (root-list order: 7, then 0):
+	// 7  (leaf)
 	// 0
 	// ├── 1
 	// │   ├── 4
@@ -125,19 +128,14 @@ void init( sparse::Tree< std::uint8_t, float >& tree )
 	// ├── 2
 	// │   └── 6
 	// └── 3
-	// Root
 	EXPECT_TRUE( tree.insert( 0, 0.f ) );
-	// Children
 	EXPECT_TRUE( tree.insert( 1, 1.f, 0 ) );
 	EXPECT_TRUE( tree.insert_after( 2, 2.f, 1 ) );
 	EXPECT_TRUE( tree.insert_after( 3, 3.f, 2 ) );
-
 	EXPECT_TRUE( tree.insert( 6, 6.f, 2 ) );
-
 	EXPECT_TRUE( tree.insert( 4, 4.f, 1 ) );
 	EXPECT_TRUE( tree.insert_after( 5, 5.f, 4 ) );
-	// Extra root
-	EXPECT_TRUE( tree.insert( 7, 7.f ) );
+	EXPECT_TRUE( tree.insert( 7, 7.f ) ); // prepended → becomes first root
 }
 } // namespace
 
@@ -146,14 +144,13 @@ TEST( SparseTree, for_each_bfs )
 	sparse::Tree< std::uint8_t, float > tree;
 	init( tree );
 
-	{
-		const std::vector< float > expected{ 7.f, 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
+	// Roots first (7, 0), then each level left-to-right.
+	const std::vector< float > expected{ 7.f, 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
 
-		std::vector< float > result;
-		tree.for_each_bfs( [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+	std::vector< float > result;
+	tree.for_each_bfs( [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
 
-		EXPECT_EQ( result, expected );
-	}
+	EXPECT_EQ( result, expected );
 }
 
 TEST( SparseTree, for_each_dfs )
@@ -161,11 +158,69 @@ TEST( SparseTree, for_each_dfs )
 	sparse::Tree< std::uint8_t, float > tree;
 	init( tree );
 
+	// Pre-order: each node visited before its children, roots in root-list order.
+	const std::vector< float > expected{ 7.f, 0.f, 1.f, 4.f, 5.f, 2.f, 6.f, 3.f };
+
+	std::vector< float > result;
+	tree.for_each_dfs(
+	    [ & ]( const auto& kv )
+	    {
+		    result.push_back( kv.second );
+		    return true;
+	    },
+	    []( const auto& ) {} );
+
+	EXPECT_EQ( result, expected );
+}
+
+TEST( SparseTree, for_each_bfs_from )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Subtree rooted at node 0
 	{
-		const std::vector< float > expected{ 7.f, 0.f, 1.f, 4.f, 5.f, 2.f, 6.f, 3.f };
+		const std::vector< float > expected{ 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
+
+		std::vector< float > result;
+		tree.for_each_bfs( 0, [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+
+		EXPECT_EQ( result, expected );
+	}
+
+	// Subtree rooted at node 1
+	{
+		const std::vector< float > expected{ 1.f, 4.f, 5.f };
+
+		std::vector< float > result;
+		tree.for_each_bfs( 1, [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+
+		EXPECT_EQ( result, expected );
+	}
+
+	// Node 7 (leaf)
+	{
+		const std::vector< float > expected{ 7.f };
+
+		std::vector< float > result;
+		tree.for_each_bfs( 7, [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+
+		EXPECT_EQ( result, expected );
+	}
+}
+
+TEST( SparseTree, for_each_dfs_from )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Subtree rooted at node 0
+	{
+		const std::vector< float > expected{ 0.f, 1.f, 4.f, 5.f, 2.f, 6.f, 3.f };
 
 		std::vector< float > result;
 		tree.for_each_dfs(
+		    0,
 		    [ & ]( const auto& kv )
 		    {
 			    result.push_back( kv.second );
@@ -174,6 +229,43 @@ TEST( SparseTree, for_each_dfs )
 		    []( const auto& ) {} );
 
 		EXPECT_EQ( result, expected );
+	}
+
+	// Subtree rooted at node 2
+	{
+		const std::vector< float > expected{ 2.f, 6.f };
+
+		std::vector< float > result;
+		tree.for_each_dfs(
+		    2,
+		    [ & ]( const auto& kv )
+		    {
+			    result.push_back( kv.second );
+			    return true;
+		    },
+		    []( const auto& ) {} );
+
+		EXPECT_EQ( result, expected );
+	}
+
+	// on_enter returning false skips the subtree; on_leave still fires for that node.
+	{
+		std::vector< float > entered;
+		std::vector< float > left;
+
+		tree.for_each_dfs(
+		    0,
+		    [ & ]( const auto& kv )
+		    {
+			    entered.push_back( kv.second );
+			    return kv.second == 0.f; // descend only into node 0
+		    },
+		    [ & ]( const auto& kv ) { left.push_back( kv.second ); } );
+
+		const std::vector< float > expected_entered{ 0.f, 1.f, 2.f, 3.f };
+		const std::vector< float > expected_left{ 1.f, 2.f, 3.f, 0.f }; // children leave before parent
+		EXPECT_EQ( entered, expected_entered );
+		EXPECT_EQ( left, expected_left );
 	}
 }
 

@@ -37,7 +37,9 @@ namespace sparse
  * - `begin()` / `end()` iterate over **all** nodes in flat storage order,
  *   regardless of tree structure.
  * - `for_each_bfs()` traverses nodes in breadth-first order across all roots.
+ * - `for_each_bfs(root, f)` traverses the subtree rooted at @p root in breadth-first order.
  * - `for_each_dfs()` traverses nodes in pre-order depth-first order across all roots.
+ * - `for_each_dfs(root, on_enter, on_leave)` traverses the subtree rooted at @p root in DFS order.
  * - `children_begin()` / `children_next()` allow manual child traversal.
  * - `sort_bfs()` reorders flat storage to match BFS visitation order, improving
  *   cache locality for breadth-first workloads.
@@ -313,7 +315,7 @@ public:
 	}
 
 	/**
-	 * Traverses the tree in breadth-first order, invoking @p f on each node.
+	 * Traverses all nodes in breadth-first order, invoking @p f on each node.
 	 *
 	 * The callback receives a reference to the underlying map's key/value pair
 	 * (i.e. `std::pair<const key_type, value_type>&`). Visitation order is:
@@ -330,12 +332,7 @@ public:
 		for_each_bfs_impl( *this, std::forward< Callable >( f ) );
 	}
 
-	/**
-	 * Const overload of for_each_bfs. The callback receives a const reference
-	 * to each key/value pair and must not mutate the tree during traversal.
-	 *
-	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
-	 */
+	/** Const overload of `for_each_bfs(f)`. */
 	template< typename Callable >
 	void for_each_bfs( Callable&& f ) const
 	{
@@ -343,12 +340,12 @@ public:
 	}
 
 	/**
-	 * Traverses the tree in depth-first order, invoking @p on_enter and @p on_leave on each node.
+	 * Traverses all nodes in depth-first pre-order, invoking @p on_enter and @p on_leave on each node.
 	 *
 	 * Both callbacks receive a reference to the underlying map's key/value pair
 	 * (i.e. `std::pair<const key_type, value_type>&`).
-	 * @p on_enter is called before a node's children are visited; it returns `bool` —
-	 * returning `false` skips the node's entire subtree but @p on_leave is still called for that node.
+	 * @p on_enter is called before a node's children are visited; returning `false` skips
+	 * the node's entire subtree while still firing @p on_leave for that node.
 	 * @p on_leave is called after all of a node's descendants have been visited.
 	 *
 	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
@@ -364,30 +361,75 @@ public:
 		for_each_dfs_impl( *this, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
 	}
 
-	/**
-	 * Const overload of for_each_dfs. Callbacks receive const references and must not
-	 * mutate the tree during traversal.
-	 *
-	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
-	 */
+	/** Const overload of `for_each_dfs(on_enter, on_leave)`. */
 	template< typename OnEnter, typename OnLeave >
 	void for_each_dfs( OnEnter&& on_enter, OnLeave&& on_leave ) const
 	{
 		for_each_dfs_impl( *this, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
 	}
 
-private:
 	/**
-	 * Shared BFS implementation for both const and non-const overloads.
+	 * Traverses the subtree rooted at @p root in breadth-first order, invoking @p f on each node.
+	 *
+	 * Only @p root and its descendants are visited. The callback receives a reference to the
+	 * underlying map's key/value pair (i.e. `std::pair<const key_type, value_type>&`).
+	 *
+	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
+	 *
+	 * @tparam Callable Invocable with signature `void(iterator::reference)`.
+	 * @param  root Key of the node at which traversal begins.
+	 * @param  f    Callback invoked once per visited node.
+	 * @pre    @p root must exist in the tree.
 	 */
+	template< typename Callable >
+	void for_each_bfs( const key_type& root, Callable&& f )
+	{
+		for_each_bfs_from_impl( *this, root, std::forward< Callable >( f ) );
+	}
+
+	/** Const overload of `for_each_bfs(root, f)`. */
+	template< typename Callable >
+	void for_each_bfs( const key_type& root, Callable&& f ) const
+	{
+		for_each_bfs_from_impl( *this, root, std::forward< Callable >( f ) );
+	}
+
+	/**
+	 * Traverses the subtree rooted at @p root in depth-first pre-order, invoking @p on_enter
+	 * and @p on_leave on each node.
+	 *
+	 * Only @p root and its descendants are visited. The callback semantics are identical to
+	 * `for_each_dfs(on_enter, on_leave)`: @p on_enter returning `false` skips the subtree
+	 * while still firing @p on_leave for that node.
+	 *
+	 * NOT re-entrant and NOT thread-safe across const calls on the same instance.
+	 *
+	 * @tparam OnEnter Invocable with signature `bool(iterator::reference)`.
+	 * @tparam OnLeave Invocable with signature `void(iterator::reference)`.
+	 * @param  root     Key of the node at which traversal begins.
+	 * @param  on_enter Callback invoked before a node's children.
+	 * @param  on_leave Callback invoked after a node's children.
+	 * @pre    @p root must exist in the tree.
+	 */
+	template< typename OnEnter, typename OnLeave >
+	void for_each_dfs( const key_type& root, OnEnter&& on_enter, OnLeave&& on_leave )
+	{
+		for_each_dfs_from_impl( *this, root, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
+	}
+
+	/** Const overload of `for_each_dfs(root, on_enter, on_leave)`. */
+	template< typename OnEnter, typename OnLeave >
+	void for_each_dfs( const key_type& root, OnEnter&& on_enter, OnLeave&& on_leave ) const
+	{
+		for_each_dfs_from_impl( *this, root, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
+	}
+
+private:
+	// Drains m_bfs_queue in BFS order. The caller is responsible for seeding the queue.
 	template< typename Self, typename Callable >
-	static void for_each_bfs_impl( Self& self, Callable&& f )
+	static void for_each_bfs_loop( Self& self, Callable&& f )
 	{
 		auto& queue = self.m_bfs_queue;
-		assert( queue.empty() );
-
-		for( auto root = self.m_root; root != s_invalid; root = self.m_relations.at( root ).next )
-			queue.push( root );
 
 		while( not queue.empty() )
 		{
@@ -404,24 +446,36 @@ private:
 		}
 	}
 
-	/**
-	 * Shared DFS implementation for both const and non-const overloads.
-	 *
-	 * Uses an explicit stack of (key, is_leave) pairs. On first visit (is_leave == false)
-	 * a leave sentinel (key, true) is pushed immediately, then on_enter is called; if it
-	 * returns true the node's children are pushed. On the sentinel (is_leave == true)
-	 * on_leave is called — so on_leave fires regardless of whether children were visited.
-	 */
-	template< typename Self, typename OnEnter, typename OnLeave >
-	static void for_each_dfs_impl( Self& self, OnEnter&& on_enter, OnLeave&& on_leave )
+	// Seeds m_bfs_queue with all roots, then runs the BFS loop.
+	template< typename Self, typename Callable >
+	static void for_each_bfs_impl( Self& self, Callable&& f )
 	{
-		auto& stack = self.m_dfs_stack;
-		assert( stack.empty() );
+		assert( self.m_bfs_queue.empty() );
 
 		for( auto root = self.m_root; root != s_invalid; root = self.m_relations.at( root ).next )
-			stack.emplace_back( root, false );
+			self.m_bfs_queue.push( root );
 
-		std::reverse( stack.begin(), stack.end() );
+		for_each_bfs_loop( self, std::forward< Callable >( f ) );
+	}
+
+	// Seeds m_bfs_queue with @p start, then runs the BFS loop.
+	template< typename Self, typename Callable >
+	static void for_each_bfs_from_impl( Self& self, const key_type& start, Callable&& f )
+	{
+		assert( self.m_bfs_queue.empty() );
+
+		self.m_bfs_queue.push( start );
+
+		for_each_bfs_loop( self, std::forward< Callable >( f ) );
+	}
+
+	// Drains m_dfs_stack in DFS pre-order. The caller is responsible for seeding the stack.
+	// Uses an explicit stack of (key, is_leave) pairs: on first visit a leave sentinel is pushed
+	// and on_enter is called; if it returns false children are skipped, but on_leave still fires.
+	template< typename Self, typename OnEnter, typename OnLeave >
+	static void for_each_dfs_loop( Self& self, OnEnter&& on_enter, OnLeave&& on_leave )
+	{
+		auto& stack = self.m_dfs_stack;
 
 		while( not stack.empty() )
 		{
@@ -448,6 +502,33 @@ private:
 
 			std::reverse( stack.begin() + children_start, stack.end() );
 		}
+	}
+
+	// Seeds m_dfs_stack with all roots (in reverse list order for correct visitation), then runs the DFS loop.
+	template< typename Self, typename OnEnter, typename OnLeave >
+	static void for_each_dfs_impl( Self& self, OnEnter&& on_enter, OnLeave&& on_leave )
+	{
+		auto& stack = self.m_dfs_stack;
+		assert( stack.empty() );
+
+		for( auto root = self.m_root; root != s_invalid; root = self.m_relations.at( root ).next )
+			stack.emplace_back( root, false );
+
+		std::reverse( stack.begin(), stack.end() );
+
+		for_each_dfs_loop( self, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
+	}
+
+	// Seeds m_dfs_stack with @p start, then runs the DFS loop.
+	template< typename Self, typename OnEnter, typename OnLeave >
+	static void for_each_dfs_from_impl( Self& self, const key_type& start, OnEnter&& on_enter, OnLeave&& on_leave )
+	{
+		auto& stack = self.m_dfs_stack;
+		assert( stack.empty() );
+
+		stack.emplace_back( start, false );
+
+		for_each_dfs_loop( self, std::forward< OnEnter >( on_enter ), std::forward< OnLeave >( on_leave ) );
 	}
 
 public:
