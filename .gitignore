@@ -3,4 +3,5 @@ debug/
 release/
 relwithdebinfo/
 .cache/
+.github/
 compile_commands.json
