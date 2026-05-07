@@ -1,4 +1,4 @@
-# SparseSet
+# SparseTree
 
 SparseSet, SparseMap and SparseTree implementation in C++20. Header only. No dependencies.
 
