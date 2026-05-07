@@ -157,6 +157,15 @@ public:
 	}
 
 	/**
+	 * Returns the smallest key that is not currently in use.
+	 *
+	 * Useful for allocating the next available key without manual tracking.
+	 * If all keys in [0, size-1] are occupied, returns `size`, which is a
+	 * valid key for the next insertion.
+	 */
+	[[nodiscard]] constexpr key_type find_slot() const { return m_map.find_slot(); }
+
+	/**
 	 * Inserts a new root node with the given @p key and @p value.
 	 *
 	 * The new node is prepended to the root list (i.e. it becomes the new
