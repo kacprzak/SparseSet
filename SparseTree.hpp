@@ -48,6 +48,8 @@ namespace sparse
  * | Operation       | Time      |
  * |-----------------|-----------|
  * | `insert`        | O(1)      |
+ * | `set_parent`    | O(depth)  |
+ * | `unset_parent`  | O(1)      |
  * | `erase`         | O(n) — erases entire subtree |
  * | `contains`      | O(1)      |
  * | `at`            | O(1)      |
@@ -240,6 +242,93 @@ public:
 
 		m_relations.insert( key, relation );
 		return m_map.insert( key, value );
+	}
+
+	/**
+	 * Moves @p key to become a child of @p new_parent, preserving @p key's subtree.
+	 *
+	 * The node is unlinked from its current parent (or the root list) and
+	 * prepended to @p new_parent's child list. All descendants of @p key move
+	 * with it.
+	 *
+	 * @param  key        Key of the node to move.
+	 * @param  new_parent Key of the node that will become the new parent.
+	 * @returns `true` if the move succeeded; `false` if:
+	 *          - @p key or @p new_parent do not exist,
+	 *          - @p key == @p new_parent, or
+	 *          - @p new_parent is a descendant of @p key (would create a cycle).
+	 * @pre    Both keys must exist in the tree.
+	 */
+	bool set_parent( const key_type& key, const key_type& new_parent )
+	{
+		if( not m_map.contains( key ) or not m_map.contains( new_parent ) )
+			return false;
+
+		if( key == new_parent )
+			return false;
+
+		// Reject if new_parent is already the current parent (no-op that is still valid, so true).
+		if( m_relations.at( key ).parent == new_parent )
+			return true;
+
+		// Cycle check: walk up from new_parent; if we reach key, it would create a cycle.
+		for( auto ancestor = m_relations.at( new_parent ).parent; ancestor != s_invalid;
+		     ancestor      = m_relations.at( ancestor ).parent )
+		{
+			if( ancestor == key )
+				return false;
+		}
+
+		// Detach key from its current position.
+		const auto old_parent = m_relations.at( key ).parent;
+		if( old_parent != s_invalid )
+		{
+			auto& siblings     = m_relations.at( old_parent ).children;
+			siblings           = list_remove( siblings, key );
+		}
+		else
+		{
+			m_root = list_remove( m_root, key );
+		}
+
+		// Prepend key to new_parent's child list.
+		auto& new_parent_rel          = m_relations.at( new_parent );
+		m_relations.at( key ).next    = new_parent_rel.children;
+		m_relations.at( key ).parent  = new_parent;
+		new_parent_rel.children       = key;
+
+		return true;
+	}
+
+	/**
+	 * Moves @p key to become a root node, preserving its subtree.
+	 *
+	 * The node is unlinked from its current parent (if any) and prepended to
+	 * the root list. If @p key is already a root, this is a no-op.
+	 *
+	 * @param  key Key of the node to promote to root.
+	 * @returns `true` if @p key exists (regardless of whether it was moved);
+	 *          `false` if @p key does not exist.
+	 */
+	bool unset_parent( const key_type& key )
+	{
+		if( not m_map.contains( key ) )
+			return false;
+
+		auto& rel = m_relations.at( key );
+		if( rel.parent == s_invalid )
+			return true; // already a root
+
+		// Detach from current parent.
+		auto& siblings  = m_relations.at( rel.parent ).children;
+		siblings        = list_remove( siblings, key );
+
+		// Prepend to root list.
+		rel.next   = m_root;
+		rel.parent = s_invalid;
+		m_root     = key;
+
+		return true;
 	}
 
 	/**

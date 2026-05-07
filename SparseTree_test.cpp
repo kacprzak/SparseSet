@@ -269,6 +269,92 @@ TEST( SparseTree, for_each_dfs_from )
 	}
 }
 
+TEST( SparseTree, set_parent_to_node )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Before: 0 → {1, 2, 3}; 7 is a root
+	// Move root 7 under node 2 → 7 should become a child of 2
+	EXPECT_TRUE( tree.set_parent( 7, 2 ) );
+	EXPECT_EQ( ( *tree.parent( 7 ) ).first, 2u );
+
+	// Children of 2 are now: 7 (prepended), then 6
+	std::vector< uint8_t > children_of_2;
+	for( auto it = tree.children_begin( 2 ); it != tree.end(); it = tree.children_next( it ) )
+		children_of_2.push_back( it->first );
+	EXPECT_EQ( children_of_2, ( std::vector< uint8_t >{ 7, 6 } ) );
+
+	// 7 is no longer a root
+	std::vector< float > roots;
+	tree.for_each_bfs(
+	    [ & ]( const auto& kv )
+	    {
+		    if( tree.parent( kv.first ) == tree.end() )
+			    roots.push_back( kv.second );
+	    } );
+	for( float v : roots )
+		EXPECT_NE( v, 7.f );
+}
+
+TEST( SparseTree, set_parent_to_root )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Move node 1 (child of 0) to become a root
+	EXPECT_TRUE( tree.unset_parent( 1 ) );
+	EXPECT_EQ( tree.parent( 1 ), tree.end() );
+
+	// Node 0's children should no longer include 1
+	std::vector< uint8_t > children_of_0;
+	for( auto it = tree.children_begin( 0 ); it != tree.end(); it = tree.children_next( it ) )
+		children_of_0.push_back( it->first );
+	for( auto k : children_of_0 )
+		EXPECT_NE( k, 1 );
+
+	// Subtree of 1 (nodes 4, 5) moves with it
+	std::vector< float > subtree;
+	tree.for_each_bfs( 1, [ & ]( const auto& kv ) { subtree.push_back( kv.second ); } );
+	EXPECT_EQ( subtree, ( std::vector< float >{ 1.f, 4.f, 5.f } ) );
+}
+
+TEST( SparseTree, set_parent_already_root_noop )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	EXPECT_TRUE( tree.insert( 0, 0.f ) );
+	EXPECT_TRUE( tree.unset_parent( 0 ) ); // already a root — no-op, returns true
+	EXPECT_EQ( tree.parent( 0 ), tree.end() );
+}
+
+TEST( SparseTree, set_parent_cycle_rejected )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Trying to make node 0 a child of node 4 (which is a descendant of 0) must fail
+	EXPECT_FALSE( tree.set_parent( 0, 4 ) );
+	// Structure unchanged: 4 is still a child of 1 which is a child of 0
+	EXPECT_EQ( ( *tree.parent( 4 ) ).first, 1u );
+	EXPECT_EQ( ( *tree.parent( 0 ) ), ( *tree.end() ) );
+}
+
+TEST( SparseTree, set_parent_self_rejected )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	EXPECT_TRUE( tree.insert( 0, 0.f ) );
+	EXPECT_FALSE( tree.set_parent( 0, 0 ) );
+}
+
+TEST( SparseTree, set_parent_missing_key_rejected )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	EXPECT_TRUE( tree.insert( 0, 0.f ) );
+	EXPECT_FALSE( tree.set_parent( 99, 0 ) );
+	EXPECT_FALSE( tree.set_parent( 0, 99 ) );
+	EXPECT_FALSE( tree.unset_parent( 99 ) );
+}
+
 TEST( SparseTree, sort_bfs )
 {
 	using namespace std::ranges;
