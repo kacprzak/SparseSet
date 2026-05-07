@@ -100,15 +100,14 @@ private:
 		auto current = list;
 		while( current != s_invalid )
 		{
-			auto& relation = m_relations.at( current );
-
-			if( relation.next == to_remove )
+			auto& rel = m_relations.at( current );
+			if( rel.next == to_remove )
 			{
-				relation.next = m_relations.at( to_remove ).next;
+				rel.next = m_relations.at( to_remove ).next;
 				return list;
 			}
 
-			current = relation.next;
+			current = rel.next;
 		}
 
 		assert( false && "list_remove: to_remove not found in list" );
@@ -120,10 +119,10 @@ private:
 		auto current = list;
 		while( current != s_invalid )
 		{
-			const auto& relation = m_relations.at( current );
-			const auto next      = relation.next;
+			const auto& rel = m_relations.at( current );
+			const auto next = rel.next;
 
-			erase_children( relation.children );
+			erase_children( rel.children );
 			m_relations.erase( current );
 			m_map.erase( current );
 
@@ -137,6 +136,7 @@ public:
 	{
 		m_map.reserve( init.size() );
 		m_relations.reserve( init.size() );
+
 		for( const auto& [ key, value ] : init )
 			insert( key, value );
 	}
@@ -204,15 +204,15 @@ public:
 		if( m_map.contains( key ) )
 			return false;
 
-		Relation relation{ .parent = parent };
+		Relation rel{ .parent = parent };
 
 		// Parent relation needs to be updated
-		auto& parent_relations = m_relations.at( parent );
+		auto& parent_rel = m_relations.at( parent );
 
-		relation.next             = parent_relations.children;
-		parent_relations.children = key;
+		rel.next            = parent_rel.children;
+		parent_rel.children = key;
 
-		m_relations.insert( key, relation );
+		m_relations.insert( key, rel );
 		return m_map.insert( key, value );
 	}
 
@@ -234,13 +234,13 @@ public:
 		if( m_map.contains( key ) )
 			return false;
 
-		auto& sibling_relation = m_relations.at( sibling );
+		auto& sibling_rel = m_relations.at( sibling );
 
-		Relation relation{ .next = sibling_relation.next, .parent = sibling_relation.parent };
+		Relation rel{ .next = sibling_rel.next, .parent = sibling_rel.parent };
 
-		sibling_relation.next = key;
+		sibling_rel.next = key;
 
-		m_relations.insert( key, relation );
+		m_relations.insert( key, rel );
 		return m_map.insert( key, value );
 	}
 
@@ -283,8 +283,8 @@ public:
 		const auto old_parent = m_relations.at( key ).parent;
 		if( old_parent != s_invalid )
 		{
-			auto& siblings     = m_relations.at( old_parent ).children;
-			siblings           = list_remove( siblings, key );
+			auto& siblings = m_relations.at( old_parent ).children;
+			siblings       = list_remove( siblings, key );
 		}
 		else
 		{
@@ -292,10 +292,10 @@ public:
 		}
 
 		// Prepend key to new_parent's child list.
-		auto& new_parent_rel          = m_relations.at( new_parent );
-		m_relations.at( key ).next    = new_parent_rel.children;
-		m_relations.at( key ).parent  = new_parent;
-		new_parent_rel.children       = key;
+		auto& new_parent_rel         = m_relations.at( new_parent );
+		m_relations.at( key ).next   = new_parent_rel.children;
+		m_relations.at( key ).parent = new_parent;
+		new_parent_rel.children      = key;
 
 		return true;
 	}
@@ -320,8 +320,8 @@ public:
 			return true; // already a root
 
 		// Detach from current parent.
-		auto& siblings  = m_relations.at( rel.parent ).children;
-		siblings        = list_remove( siblings, key );
+		auto& siblings = m_relations.at( rel.parent ).children;
+		siblings       = list_remove( siblings, key );
 
 		// Prepend to root list.
 		rel.next   = m_root;
@@ -346,11 +346,10 @@ public:
 		if( not m_map.contains( key ) )
 			return false;
 
-		const Relation r = m_relations.at( key );
-
-		if( r.parent != s_invalid )
+		const Relation rel = m_relations.at( key );
+		if( rel.parent != s_invalid )
 		{
-			auto& parent_children = m_relations.at( r.parent ).children;
+			auto& parent_children = m_relations.at( rel.parent ).children;
 			parent_children       = list_remove( parent_children, key );
 		}
 		else
@@ -358,7 +357,7 @@ public:
 			m_root = list_remove( m_root, key );
 		}
 
-		erase_children( r.children );
+		erase_children( rel.children );
 
 		m_relations.erase( key );
 		const bool erased = m_map.erase( key );
