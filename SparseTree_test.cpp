@@ -371,4 +371,68 @@ TEST( SparseTree, sort_bfs )
 	}
 }
 
+TEST( SparseTree, for_each_bfs_reentrant )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Outer BFS collects the keys of nodes at level 1 (children of node 0).
+	// For each such node, an inner BFS collects its subtree values.
+	// This verifies that nested for_each_bfs calls don't corrupt each other.
+	std::vector< std::vector< float > > subtrees;
+
+	tree.for_each_bfs( 0,
+	                   [ & ]( const auto& kv )
+	                   {
+		                   std::vector< float > sub;
+		                   tree.for_each_bfs( kv.first, [ & ]( const auto& inner ) { sub.push_back( inner.second ); } );
+		                   subtrees.push_back( std::move( sub ) );
+	                   } );
+
+	// Subtree of 0: {0,1,2,3,4,5,6}  Subtree of 1: {1,4,5}  Subtree of 2: {2,6}  Subtree of 3: {3}
+	ASSERT_EQ( subtrees.size(), 7u );
+	EXPECT_EQ( subtrees[ 0 ], ( std::vector< float >{ 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f } ) );
+	EXPECT_EQ( subtrees[ 1 ], ( std::vector< float >{ 1.f, 4.f, 5.f } ) );
+	EXPECT_EQ( subtrees[ 2 ], ( std::vector< float >{ 2.f, 6.f } ) );
+	EXPECT_EQ( subtrees[ 3 ], ( std::vector< float >{ 3.f } ) );
+	EXPECT_EQ( subtrees[ 4 ], ( std::vector< float >{ 4.f } ) );
+	EXPECT_EQ( subtrees[ 5 ], ( std::vector< float >{ 5.f } ) );
+	EXPECT_EQ( subtrees[ 6 ], ( std::vector< float >{ 6.f } ) );
+}
+
+TEST( SparseTree, for_each_dfs_reentrant )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// For each node visited in an outer DFS, run an inner BFS over the same node's subtree.
+	// This verifies that DFS and BFS scratch are independent and can be nested freely.
+	std::vector< float > outer_enter_order;
+	std::vector< float > inner_root_values;
+
+	tree.for_each_dfs(
+	    0,
+	    [ & ]( const auto& kv )
+	    {
+		    outer_enter_order.push_back( kv.second );
+
+		    float first = -1.f;
+		    tree.for_each_bfs( kv.first,
+		                       [ & ]( const auto& inner )
+		                       {
+			                       if( first < 0.f )
+				                       first = inner.second;
+		                       } );
+		    inner_root_values.push_back( first );
+
+		    return true;
+	    },
+	    []( const auto& ) {} );
+
+	// on_enter visits in DFS pre-order; the inner BFS of each subtree starts at that same node.
+	const std::vector< float > expected{ 0.f, 1.f, 4.f, 5.f, 2.f, 6.f, 3.f };
+	EXPECT_EQ( outer_enter_order, expected );
+	EXPECT_EQ( inner_root_values, expected ); // each inner BFS starts at the same node
+}
+
 } // namespace
