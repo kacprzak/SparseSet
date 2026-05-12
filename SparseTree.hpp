@@ -188,6 +188,19 @@ public:
 	}
 
 	/**
+	 * @overload insert( key, value ) accepting a move-only or rvalue value.
+	 */
+	bool insert( const key_type& key, value_type&& value )
+	{
+		if( m_map.contains( key ) )
+			return false;
+
+		m_relations.insert( key, Relation{ .next = m_root } );
+		m_root = key;
+		return m_map.insert( key, std::move( value ) );
+	}
+
+	/**
 	 * Inserts a new node with the given @p key and @p value as a child of @p parent.
 	 *
 	 * The new node is prepended to @p parent's child list (i.e. it becomes
@@ -217,6 +230,26 @@ public:
 	}
 
 	/**
+	 * @overload insert( key, value, parent ) accepting a move-only or rvalue value.
+	 */
+	bool insert( const key_type& key, value_type&& value, const key_type& parent )
+	{
+		if( m_map.contains( key ) )
+			return false;
+
+		Relation rel{ .parent = parent };
+
+		// Parent relation needs to be updated
+		auto& parent_rel = m_relations.at( parent );
+
+		rel.next            = parent_rel.children;
+		parent_rel.children = key;
+
+		m_relations.insert( key, rel );
+		return m_map.insert( key, std::move( value ) );
+	}
+
+	/**
 	 * Inserts a new node with the given @p key and @p value immediately after @p sibling
 	 * in the sibling list.
 	 *
@@ -242,6 +275,24 @@ public:
 
 		m_relations.insert( key, rel );
 		return m_map.insert( key, value );
+	}
+
+	/**
+	 * @overload insert_after( key, value, sibling ) accepting a move-only or rvalue value.
+	 */
+	bool insert_after( const key_type& key, value_type&& value, const key_type& sibling )
+	{
+		if( m_map.contains( key ) )
+			return false;
+
+		auto& sibling_rel = m_relations.at( sibling );
+
+		Relation rel{ .next = sibling_rel.next, .parent = sibling_rel.parent };
+
+		sibling_rel.next = key;
+
+		m_relations.insert( key, rel );
+		return m_map.insert( key, std::move( value ) );
 	}
 
 	/**

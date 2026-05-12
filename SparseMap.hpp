@@ -64,6 +64,15 @@ private:
 		m_dense.emplace_back( key, value );
 	}
 
+	void do_insert( const key_type& key, value_type&& value )
+	{
+		if( key >= m_sparse.size() )
+			m_sparse.resize( key + 1u, s_invalid );
+
+		m_sparse[ key ] = m_dense.size();
+		m_dense.emplace_back( key, std::move( value ) );
+	}
+
 public:
 	Map() = default;
 
@@ -130,6 +139,21 @@ public:
 	}
 
 	/**
+	 * @overload insert( key, value ) accepting a move-only or rvalue value.
+	 */
+	bool insert( const key_type& key, value_type&& value )
+	{
+		if( key == s_invalid )
+			throw std::logic_error{ "Invalid key value." };
+
+		if( contains( key ) )
+			return false;
+
+		do_insert( key, std::move( value ) );
+		return true;
+	}
+
+	/**
 	 * Inserts @p value at @p key if the key is not already present.
 	 *
 	 * @param  key   Key to insert at. Must not equal the sentinel value
@@ -150,6 +174,24 @@ public:
 		}
 
 		do_insert( key, value );
+		return true;
+	}
+
+	/**
+	 * @overload insert_or_assign( key, value ) accepting a move-only or rvalue value.
+	 */
+	bool insert_or_assign( const key_type& key, value_type&& value )
+	{
+		if( key == s_invalid )
+			throw std::logic_error{ "Invalid key value." };
+
+		if( contains( key ) )
+		{
+			m_dense[ m_sparse[ key ] ] = { key, std::move( value ) };
+			return false;
+		}
+
+		do_insert( key, std::move( value ) );
 		return true;
 	}
 

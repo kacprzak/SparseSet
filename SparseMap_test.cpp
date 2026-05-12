@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <ranges>
 
 namespace
@@ -133,6 +134,26 @@ TEST( SparseMap, find_slot )
 	map.insert( map.find_slot(), 2.f );
 	EXPECT_EQ( map.at( 0 ), 2.f );
 	EXPECT_EQ( map.at( 1 ), 4.f );
+}
+
+TEST( SparseMap, insert_move_only )
+{
+	sparse::Map< std::uint8_t, std::unique_ptr< int > > map;
+
+	EXPECT_TRUE( map.insert( 1, std::make_unique< int >( 42 ) ) );
+	EXPECT_FALSE( map.insert( 1, std::make_unique< int >( 99 ) ) );
+	EXPECT_EQ( map.size(), 1u );
+	EXPECT_EQ( *map.at( 1 ), 42 );
+}
+
+TEST( SparseMap, insert_or_assign_move_only )
+{
+	sparse::Map< std::uint8_t, std::unique_ptr< int > > map;
+
+	EXPECT_TRUE( map.insert_or_assign( 1, std::make_unique< int >( 42 ) ) );
+	EXPECT_FALSE( map.insert_or_assign( 1, std::make_unique< int >( 99 ) ) );
+	EXPECT_EQ( map.size(), 1u );
+	EXPECT_EQ( *map.at( 1 ), 99 );
 }
 
 } // namespace

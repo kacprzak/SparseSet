@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <algorithm>
+#include <memory>
 #include <ranges>
 
 #include "SparseTree.hpp"
@@ -433,6 +434,20 @@ TEST( SparseTree, for_each_dfs_reentrant )
 	const std::vector< float > expected{ 0.f, 1.f, 4.f, 5.f, 2.f, 6.f, 3.f };
 	EXPECT_EQ( outer_enter_order, expected );
 	EXPECT_EQ( inner_root_values, expected ); // each inner BFS starts at the same node
+}
+
+TEST( SparseTree, insert_move_only )
+{
+	sparse::Tree< std::uint8_t, std::unique_ptr< int > > tree;
+
+	EXPECT_TRUE( tree.insert( 0u, std::make_unique< int >( 1 ) ) );
+	EXPECT_TRUE( tree.insert( 1u, std::make_unique< int >( 2 ), 0u ) );
+	EXPECT_TRUE( tree.insert_after( 2u, std::make_unique< int >( 3 ), 1u ) );
+
+	EXPECT_EQ( tree.size(), 3u );
+	EXPECT_EQ( *tree.at( 0u ), 1 );
+	EXPECT_EQ( *tree.at( 1u ), 2 );
+	EXPECT_EQ( *tree.at( 2u ), 3 );
 }
 
 } // namespace
