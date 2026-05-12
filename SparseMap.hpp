@@ -55,22 +55,14 @@ private:
 		std::swap( m_dense[ first ], m_dense[ second ] );
 	}
 
-	void do_insert( const key_type& key, const value_type& value )
+	template< typename ValueArg >
+	void do_insert( const key_type& key, ValueArg&& value )
 	{
 		if( key >= m_sparse.size() )
 			m_sparse.resize( key + 1u, s_invalid );
 
 		m_sparse[ key ] = m_dense.size();
-		m_dense.emplace_back( key, value );
-	}
-
-	void do_insert( const key_type& key, value_type&& value )
-	{
-		if( key >= m_sparse.size() )
-			m_sparse.resize( key + 1u, s_invalid );
-
-		m_sparse[ key ] = m_dense.size();
-		m_dense.emplace_back( key, std::move( value ) );
+		m_dense.emplace_back( key, std::forward< ValueArg >( value ) );
 	}
 
 public:
@@ -126,7 +118,8 @@ public:
 	/**
 	 * Returns true if insertion took place and false if there is already value under index.
 	 */
-	bool insert( const key_type& key, const value_type& value )
+	template< std::convertible_to< value_type > ValueArg >
+	bool insert( const key_type& key, ValueArg&& value )
 	{
 		if( key == s_invalid )
 			throw std::logic_error{ "Invalid key value." };
@@ -134,22 +127,7 @@ public:
 		if( contains( key ) )
 			return false;
 
-		do_insert( key, value );
-		return true;
-	}
-
-	/**
-	 * @overload insert( key, value ) accepting a move-only or rvalue value.
-	 */
-	bool insert( const key_type& key, value_type&& value )
-	{
-		if( key == s_invalid )
-			throw std::logic_error{ "Invalid key value." };
-
-		if( contains( key ) )
-			return false;
-
-		do_insert( key, std::move( value ) );
+		do_insert( key, std::forward< ValueArg >( value ) );
 		return true;
 	}
 
@@ -162,36 +140,19 @@ public:
 	 * @returns `true` if the value was inserted; `false` if @p key already exists.
 	 * @throws std::logic_error if @p key is the sentinel value.
 	 */
-	bool insert_or_assign( const key_type& key, const value_type& value )
+	template< std::convertible_to< value_type > ValueArg >
+	bool insert_or_assign( const key_type& key, ValueArg&& value )
 	{
 		if( key == s_invalid )
 			throw std::logic_error{ "Invalid key value." };
 
 		if( contains( key ) )
 		{
-			m_dense[ m_sparse[ key ] ] = { key, value };
+			m_dense[ m_sparse[ key ] ] = { key, std::forward< ValueArg >( value ) };
 			return false;
 		}
 
-		do_insert( key, value );
-		return true;
-	}
-
-	/**
-	 * @overload insert_or_assign( key, value ) accepting a move-only or rvalue value.
-	 */
-	bool insert_or_assign( const key_type& key, value_type&& value )
-	{
-		if( key == s_invalid )
-			throw std::logic_error{ "Invalid key value." };
-
-		if( contains( key ) )
-		{
-			m_dense[ m_sparse[ key ] ] = { key, std::move( value ) };
-			return false;
-		}
-
-		do_insert( key, std::move( value ) );
+		do_insert( key, std::forward< ValueArg >( value ) );
 		return true;
 	}
 

@@ -45,7 +45,7 @@ TEST( SparseMap, insert )
 	EXPECT_EQ( map.size(), 1u );
 	EXPECT_EQ( map.at( 13 ), 7.f );
 
-	EXPECT_ANY_THROW( map.insert( 255, {} ) );
+	EXPECT_ANY_THROW( map.insert( 255, float{} ) );
 }
 
 TEST( SparseMap, erase )

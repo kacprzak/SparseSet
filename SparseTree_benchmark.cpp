@@ -14,7 +14,7 @@ auto createRandomSet( std::size_t size )
 	sparse::Tree< std::uint16_t, float > tree;
 	tree.reserve( size );
 
-	tree.insert( 0u, {} );
+	tree.insert( 0u, float{} );
 
 	for( auto i = 1u; i < size; ++i )
 		tree.insert( i, i, std::rand() % tree.size() );
