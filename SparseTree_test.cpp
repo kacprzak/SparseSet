@@ -436,18 +436,50 @@ TEST( SparseTree, for_each_dfs_reentrant )
 	EXPECT_EQ( inner_root_values, expected ); // each inner BFS starts at the same node
 }
 
-TEST( SparseTree, insert_move_only )
+TEST( SparseTree, sub_tree )
 {
-	sparse::Tree< std::uint8_t, std::unique_ptr< int > > tree;
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
 
-	EXPECT_TRUE( tree.insert( 0u, std::make_unique< int >( 1 ) ) );
-	EXPECT_TRUE( tree.insert( 1u, std::make_unique< int >( 2 ), 0u ) );
-	EXPECT_TRUE( tree.insert_after( 2u, std::make_unique< int >( 3 ), 1u ) );
+	// Subtree rooted at node 0 (excludes the root 7)
+	{
+		auto sub = tree.sub_tree( 0 );
 
-	EXPECT_EQ( tree.size(), 3u );
-	EXPECT_EQ( *tree.at( 0u ), 1 );
-	EXPECT_EQ( *tree.at( 1u ), 2 );
-	EXPECT_EQ( *tree.at( 2u ), 3 );
+		EXPECT_EQ( sub.size(), 7u );
+		EXPECT_EQ( sub.parent( 0 ), sub.end() ); // 0 is a root in the new tree
+
+		const std::vector< float > expected{ 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f };
+		std::vector< float > result;
+		sub.for_each_bfs( [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+		EXPECT_EQ( result, expected );
+	}
+
+	// Subtree rooted at node 1
+	{
+		auto sub = tree.sub_tree( 1 );
+
+		EXPECT_EQ( sub.size(), 3u );
+		EXPECT_EQ( sub.parent( 1 ), sub.end() );
+		EXPECT_EQ( ( *sub.parent( 4 ) ).first, 1u );
+		EXPECT_EQ( ( *sub.parent( 5 ) ).first, 1u );
+
+		const std::vector< float > expected{ 1.f, 4.f, 5.f };
+		std::vector< float > result;
+		sub.for_each_bfs( [ & ]( const auto& kv ) { result.push_back( kv.second ); } );
+		EXPECT_EQ( result, expected );
+	}
+
+	// Leaf node
+	{
+		auto sub = tree.sub_tree( 7 );
+
+		EXPECT_EQ( sub.size(), 1u );
+		EXPECT_EQ( sub.parent( 7 ), sub.end() );
+	}
+
+	// Original tree is unmodified
+	EXPECT_EQ( tree.size(), 8u );
 }
 
 } // namespace
+

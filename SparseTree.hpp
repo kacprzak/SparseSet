@@ -55,6 +55,7 @@ namespace sparse
  * | `at`            | O(1)      |
  * | `for_each_bfs`  | O(n)      |
  * | `for_each_dfs`  | O(n)      |
+ * | `sub_tree`      | O(n)      |
  * | `sort_bfs`      | O(n)      |
  *
  * @note `sort_bfs` relies on `Map`'s iterator being random access for O(1)
@@ -632,6 +633,49 @@ public:
 		    } );
 
 		m_map.reorder( permutation );
+	}
+
+	/**
+	 * Returns a new tree that is a deep copy of the subtree rooted at @p root.
+	 *
+	 * The returned tree contains @p root and all of its descendants. The copied root
+	 * has no parent in the returned tree. Sibling order is preserved.
+	 *
+	 * @param  root Key of the node at which the subtree begins.
+	 * @returns A new `Tree` containing all nodes in the subtree.
+	 * @pre    @p root must exist in the tree.
+	 */
+	[[nodiscard]]
+	Tree sub_tree( const key_type& root ) const
+	    requires std::copy_constructible< value_type >
+	{
+		Tree result;
+
+		std::queue< key_type > queue;
+		queue.push( root );
+
+		result.insert( root, m_map.at( root ) );
+
+		while( not queue.empty() )
+		{
+			const auto current = queue.front();
+			queue.pop();
+
+			key_type prev = s_invalid;
+			for( auto child = m_relations.at( current ).children; child != s_invalid;
+			     child      = m_relations.at( child ).next )
+			{
+				if( prev == s_invalid )
+					result.insert( child, m_map.at( child ), current );
+				else
+					result.insert_after( child, m_map.at( child ), prev );
+
+				prev = child;
+				queue.push( child );
+			}
+		}
+
+		return result;
 	}
 
 private:
