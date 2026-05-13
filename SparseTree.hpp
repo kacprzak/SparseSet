@@ -5,7 +5,9 @@
 #include <cassert>
 #include <concepts>
 #include <iterator>
+#include <optional>
 #include <queue>
+#include <ranges>
 #include <vector>
 
 namespace sparse
@@ -56,6 +58,7 @@ namespace sparse
  * | `for_each_bfs`  | O(n)      |
  * | `for_each_dfs`  | O(n)      |
  * | `sub_tree`      | O(n)      |
+ * | `sub_trees`     | O(n)      |
  * | `sort_bfs`      | O(n)      |
  *
  * @note `sort_bfs` relies on `Map`'s iterator being random access for O(1)
@@ -650,11 +653,64 @@ public:
 	    requires std::copy_constructible< value_type >
 	{
 		Tree result;
+		copy_subtree_into( result, root );
+		return result;
+	}
+
+	/**
+	 * Returns a new tree that is a deep copy of all specified subtrees combined into a forest.
+	 *
+	 * Each key in @p roots seeds one subtree. The corresponding root node has no parent in the
+	 * returned tree; its descendants are copied with their sibling order preserved. All requested
+	 * roots are processed in iteration order.
+	 *
+	 * @param  roots Range (or initializer list) of root keys to include.
+	 * @returns A `std::optional<Tree>` containing the merged forest, or `std::nullopt` if:
+	 *          - any key in @p roots is not present in this tree, or
+	 *          - any two requested subtrees overlap (i.e. one root is an ancestor of another,
+	 *            or the same key appears more than once in @p roots).
+	 */
+	[[nodiscard]]
+	std::optional< Tree > sub_trees( std::initializer_list< key_type > roots ) const
+	    requires std::copy_constructible< value_type >
+	{
+		Tree result;
+		for( const auto& root : roots )
+		{
+			if( not m_map.contains( root ) or not copy_subtree_into( result, root ) )
+				return std::nullopt;
+		}
+		return result;
+	}
+
+	/** Range overload of `sub_trees`. */
+	template< std::ranges::input_range Range >
+	    requires std::same_as< std::ranges::range_value_t< Range >, key_type > && std::copy_constructible< value_type >
+	[[nodiscard]]
+	std::optional< Tree > sub_trees( Range&& roots ) const
+	{
+		Tree result;
+		for( const auto& root : roots )
+		{
+			if( not m_map.contains( root ) or not copy_subtree_into( result, root ) )
+				return std::nullopt;
+		}
+		return result;
+	}
+
+private:
+	// BFS-copies the subtree of `root` from this tree into `result`, inserting `root` as a
+	// new root of `result`. Returns true on success. Returns false if any node to be inserted
+	// already exists in `result` (overlap) — `result` is left in a partial state and must be
+	// discarded by the caller.
+	bool copy_subtree_into( Tree& result, const key_type& root ) const
+	    requires std::copy_constructible< value_type >
+	{
+		if( not result.insert( root, m_map.at( root ) ) )
+			return false;
 
 		std::queue< key_type > queue;
 		queue.push( root );
-
-		result.insert( root, m_map.at( root ) );
 
 		while( not queue.empty() )
 		{
@@ -665,20 +721,20 @@ public:
 			for( auto child = m_relations.at( current ).children; child != s_invalid;
 			     child      = m_relations.at( child ).next )
 			{
-				if( prev == s_invalid )
-					result.insert( child, m_map.at( child ), current );
-				else
-					result.insert_after( child, m_map.at( child ), prev );
+				const bool ok = ( prev == s_invalid ) ? result.insert( child, m_map.at( child ), current ) :
+				                                        result.insert_after( child, m_map.at( child ), prev );
+
+				if( not ok )
+					return false;
 
 				prev = child;
 				queue.push( child );
 			}
 		}
 
-		return result;
+		return true;
 	}
 
-private:
 	Map< key_type, value_type > m_map;
 	Map< key_type, Relation > m_relations;
 	key_type m_root = s_invalid; //< first root

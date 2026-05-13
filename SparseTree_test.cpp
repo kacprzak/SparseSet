@@ -481,5 +481,82 @@ TEST( SparseTree, sub_tree )
 	EXPECT_EQ( tree.size(), 8u );
 }
 
-} // namespace
+TEST( SparseTree, sub_trees_disjoint )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
 
+	// Subtrees rooted at 1 and 7 are disjoint
+	auto result = tree.sub_trees( { 1, 7 } );
+	ASSERT_TRUE( result.has_value() );
+
+	EXPECT_EQ( result->size(), 4u ); // 1, 4, 5, 7
+
+	// Both requested roots are roots in the result
+	EXPECT_EQ( result->parent( 1 ), result->end() );
+	EXPECT_EQ( result->parent( 7 ), result->end() );
+
+	// Sub-structure preserved
+	EXPECT_EQ( ( *result->parent( 4 ) ).first, 1u );
+	EXPECT_EQ( ( *result->parent( 5 ) ).first, 1u );
+
+	// BFS order: roots in root-list order (last inserted = first root), then their children
+	const std::vector< float > expected{ 7.f, 1.f, 4.f, 5.f };
+	std::vector< float > bfs;
+	result->for_each_bfs( [ & ]( const auto& kv ) { bfs.push_back( kv.second ); } );
+	EXPECT_EQ( bfs, expected );
+
+	// Original tree unchanged
+	EXPECT_EQ( tree.size(), 8u );
+}
+
+TEST( SparseTree, sub_trees_overlap_fails )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	// Node 1 is a descendant of node 0 → overlap
+	EXPECT_FALSE( tree.sub_trees( { 0, 1 } ).has_value() );
+	EXPECT_FALSE( tree.sub_trees( { 1, 0 } ).has_value() );
+
+	// Duplicate key
+	EXPECT_FALSE( tree.sub_trees( { 1, 1 } ).has_value() );
+}
+
+TEST( SparseTree, sub_trees_missing_key_fails )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	EXPECT_FALSE( tree.sub_trees( { 1, 99 } ).has_value() );
+}
+
+TEST( SparseTree, sub_trees_range )
+{
+	sparse::Tree< std::uint8_t, float > tree;
+	init( tree );
+
+	const std::vector< std::uint8_t > roots{ 3, 7 };
+	auto result = tree.sub_trees( roots );
+	ASSERT_TRUE( result.has_value() );
+
+	EXPECT_EQ( result->size(), 2u );
+	EXPECT_EQ( result->parent( 3 ), result->end() );
+	EXPECT_EQ( result->parent( 7 ), result->end() );
+}
+
+TEST( SparseTree, insert_move_only )
+{
+	sparse::Tree< std::uint8_t, std::unique_ptr< int > > tree;
+
+	EXPECT_TRUE( tree.insert( 0u, std::make_unique< int >( 1 ) ) );
+	EXPECT_TRUE( tree.insert( 1u, std::make_unique< int >( 2 ), 0u ) );
+	EXPECT_TRUE( tree.insert_after( 2u, std::make_unique< int >( 3 ), 1u ) );
+
+	EXPECT_EQ( tree.size(), 3u );
+	EXPECT_EQ( *tree.at( 0u ), 1 );
+	EXPECT_EQ( *tree.at( 1u ), 2 );
+	EXPECT_EQ( *tree.at( 2u ), 3 );
+}
+
+} // namespace
