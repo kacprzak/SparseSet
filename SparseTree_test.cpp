@@ -559,4 +559,54 @@ TEST( SparseTree, insert_move_only )
 	EXPECT_EQ( *tree.at( 2u ), 3 );
 }
 
+TEST( SparseTree, equality_same_structure )
+{
+	sparse::Tree< std::uint8_t, float > a;
+	a.insert( 0, 0.f );
+	a.insert( 1, 1.f, 0 );
+	a.insert( 2, 2.f, 0 );
+
+	sparse::Tree< std::uint8_t, float > b;
+	b.insert( 0, 0.f );
+	b.insert( 1, 1.f, 0 );
+	b.insert( 2, 2.f, 0 );
+
+	EXPECT_EQ( a, b );
+}
+
+TEST( SparseTree, equality_different_values )
+{
+	sparse::Tree< std::uint8_t, float > a;
+	a.insert( 0, 0.f );
+	a.insert( 1, 1.f, 0 );
+
+	sparse::Tree< std::uint8_t, float > b;
+	b.insert( 0, 0.f );
+	b.insert( 1, 99.f, 0 );
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseTree, equality_different_topology )
+{
+	// Same nodes and values, but different parent-child relationships.
+	sparse::Tree< std::uint8_t, float > a;
+	a.insert( 0, 0.f );
+	a.insert( 1, 1.f, 0 ); // 1 is child of 0
+
+	sparse::Tree< std::uint8_t, float > b;
+	b.insert( 0, 0.f );
+	b.insert( 1, 1.f ); // 1 is a root (no parent)
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseTree, equality_empty )
+{
+	sparse::Tree< std::uint8_t, float > a;
+	sparse::Tree< std::uint8_t, float > b;
+
+	EXPECT_EQ( a, b );
+}
+
 } // namespace

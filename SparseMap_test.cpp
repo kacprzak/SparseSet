@@ -156,4 +156,44 @@ TEST( SparseMap, insert_or_assign_move_only )
 	EXPECT_EQ( *map.at( 1 ), 99 );
 }
 
+TEST( SparseMap, equality_same_pairs )
+{
+	sparse::Map< std::uint16_t, float > a{ { 1, 1.f }, { 2, 2.f }, { 3, 3.f } };
+	sparse::Map< std::uint16_t, float > b{ { 3, 3.f }, { 1, 1.f }, { 2, 2.f } };
+
+	EXPECT_EQ( a, b );
+}
+
+TEST( SparseMap, equality_different_values )
+{
+	sparse::Map< std::uint16_t, float > a{ { 1, 1.f }, { 2, 2.f } };
+	sparse::Map< std::uint16_t, float > b{ { 1, 1.f }, { 2, 99.f } };
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseMap, equality_different_keys )
+{
+	sparse::Map< std::uint16_t, float > a{ { 1, 1.f }, { 2, 2.f } };
+	sparse::Map< std::uint16_t, float > b{ { 1, 1.f }, { 3, 2.f } };
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseMap, equality_different_sizes )
+{
+	sparse::Map< std::uint16_t, float > a{ { 1, 1.f }, { 2, 2.f } };
+	sparse::Map< std::uint16_t, float > b{ { 1, 1.f } };
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseMap, equality_empty )
+{
+	sparse::Map< std::uint16_t, float > a;
+	sparse::Map< std::uint16_t, float > b;
+
+	EXPECT_EQ( a, b );
+}
+
 } // namespace

@@ -87,6 +87,8 @@ private:
 		key_type children = s_invalid; //< first child
 		key_type next     = s_invalid; //< next sibling
 		key_type parent   = s_invalid; //< parent
+
+		bool operator==( const Relation& ) const = default;
 	};
 
 	/**
@@ -738,6 +740,13 @@ private:
 	Map< key_type, value_type > m_map;
 	Map< key_type, Relation > m_relations;
 	key_type m_root = s_invalid; //< first root
+
+public:
+	/**
+	 * Returns `true` if both trees contain exactly the same nodes, values, and
+	 * parent/child/sibling topology, regardless of flat storage order.
+	 */
+	[[nodiscard]] bool operator==( const Tree& ) const = default;
 };
 
 } // namespace sparse

@@ -358,6 +358,29 @@ public:
 			return end();
 	}
 
+	/**
+	 * Returns `true` if both maps contain exactly the same key→value pairs,
+	 * regardless of insertion order.
+	 */
+	[[nodiscard]]
+	friend bool operator==( const Map& lhs, const Map& rhs )
+	    requires std::equality_comparable< value_type >
+	{
+		if( lhs.size() != rhs.size() )
+			return false;
+
+		for( const auto& [ key, val ] : lhs )
+		{
+			if( not rhs.contains( key ) )
+				return false;
+
+			if( rhs.m_dense[ rhs.m_sparse[ key ] ].second != val )
+				return false;
+		}
+
+		return true;
+	}
+
 private:
 	std::vector< key_type > m_sparse;                         // maps key -> dense index
 	std::vector< std::pair< key_type, value_type > > m_dense; // dense array of (key, value) pairs

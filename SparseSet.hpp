@@ -197,6 +197,22 @@ public:
 	[[nodiscard]] constexpr auto begin() const noexcept { return m_dense.begin(); }
 	[[nodiscard]] constexpr auto end() const noexcept { return m_dense.end(); }
 
+	/**
+	 * Returns `true` if both sets contain exactly the same keys, regardless of insertion order.
+	 */
+	[[nodiscard]]
+	friend bool operator==( const Set& lhs, const Set& rhs ) noexcept
+	{
+		if( lhs.size() != rhs.size() )
+			return false;
+
+		for( const auto key : lhs )
+			if( not rhs.contains( key ) )
+				return false;
+
+		return true;
+	}
+
 private:
 	std::vector< key_type > m_sparse; // maps key -> dense index
 	std::vector< key_type > m_dense;  // dense array of keys

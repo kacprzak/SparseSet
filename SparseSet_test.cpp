@@ -110,4 +110,36 @@ TEST( SparseSet, reorder )
 	EXPECT_TRUE( equal( set, expected ) );
 }
 
+TEST( SparseSet, equality_same_keys )
+{
+	sparse::Set< std::uint16_t > a{ 1, 2, 3 };
+	sparse::Set< std::uint16_t > b{ 3, 1, 2 };
+
+	EXPECT_EQ( a, b );
+}
+
+TEST( SparseSet, equality_different_keys )
+{
+	sparse::Set< std::uint16_t > a{ 1, 2, 3 };
+	sparse::Set< std::uint16_t > b{ 1, 2, 4 };
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseSet, equality_different_sizes )
+{
+	sparse::Set< std::uint16_t > a{ 1, 2, 3 };
+	sparse::Set< std::uint16_t > b{ 1, 2 };
+
+	EXPECT_NE( a, b );
+}
+
+TEST( SparseSet, equality_empty )
+{
+	sparse::Set< std::uint16_t > a;
+	sparse::Set< std::uint16_t > b;
+
+	EXPECT_EQ( a, b );
+}
+
 } // namespace
